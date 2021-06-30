@@ -1,0 +1,21 @@
+﻿@model MarkopTest.Models.ExportResultModel
+<html>
+	<head>
+		<title>Pie Chart</title>
+		<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+	</head>
+	<body>
+		<div id="response_time_sync" style="height: 370px; width: 100%;"></div>
+		<div id="response_time_async" style="height: 370px; width: 100%;"></div>
+		<div id="distribution_time_sync" style="height: 370px; width: 100%;"></div>
+		<div id="distribution_time_async" style="height: 370px; width: 100%;"></div>
+	</body>
+	<script>
+		const syncTimesIterationsJsArray = @(Model.SyncTimesIterationsJsArray)
+		const asyncTimesIterationsJsArray = @(Model.AsyncTimesIterationsJsArray)
+		const syncTimesDistributionJsArray = @(Model.SyncTimesDistributionJsArray)
+		const asyncTimesDistributionJsArray = @(Model.AsyncTimesDistributionJsArray)
+	</script>
+    <script src="scripts/responseTime.js"></script>
+    <script src="scripts/distributionTime.js"></script>
+</html> 
