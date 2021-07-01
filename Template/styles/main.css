@@ -1,0 +1,25 @@
+* {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.mk-title {
+    color: #232323;
+    margin-top: 2rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.mk-content {
+    padding: 10px;
+}
+
+.mk-card {
+    padding: 25px;
+}
+
+.mk-card-body {
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #3838381f;
+    box-shadow: inset 0 0 2px 0 #00000045;
+}

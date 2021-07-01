@@ -12,7 +12,6 @@
     },
     title: {
         text: 'Sync Request Response Time In Iteration',
-        align: 'center'
     },
     yaxis: {
         type: 'numeric',
@@ -48,7 +47,6 @@ new ApexCharts(document.querySelector("#response_time_async"), {
         data: asyncTimesIterationsJsArray
     }],
     title: {
-        text: 'ASync Request Response Time In Iteration',
-        align: 'center'
+        text: 'Async Request Response Time In Iteration',
     }
 }).render();

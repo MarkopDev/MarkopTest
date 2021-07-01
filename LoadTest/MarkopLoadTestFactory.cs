@@ -100,21 +100,27 @@ namespace MarkopTest.LoadTest
 
             client ??= await GetDefaultClient() ?? Client;
 
-            var syncTimes = new ConcurrentDictionary<int, long>();
-            var asyncTimes = new ConcurrentDictionary<int, long>();
             var tasks = new List<Task>();
+            var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
+            var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
 
             for (var i = 0; i < 50; i++)
             {
                 var sw = Stopwatch.StartNew();
 
-                await client.PostAsync(_uri, JsonContent.Create(data));
+                HttpResponseMessage response = await client.PostAsync(_uri, JsonContent.Create(data));
 
                 sw.Stop();
-                var milliseconds = sw.ElapsedMilliseconds;
-                while (!syncTimes.TryAdd(i, milliseconds))
+
+                var requestInfo = new RequestInfo
                 {
-                    Thread.Sleep(1000);
+                    ResponseStatus = response.StatusCode,
+                    ResponseTime = sw.ElapsedMilliseconds
+                };
+
+                while (!syncRequestInfos.TryAdd(i, requestInfo))
+                {
+                    Thread.Sleep(100);
                 }
             }
 
@@ -125,49 +131,92 @@ namespace MarkopTest.LoadTest
                 {
                     var sw = Stopwatch.StartNew();
 
-                    await client.PostAsync(_uri, JsonContent.Create(data));
+                    HttpResponseMessage response = await client.PostAsync(_uri, JsonContent.Create(data));
 
                     sw.Stop();
-                    var milliseconds = sw.ElapsedMilliseconds;
-                    while (!asyncTimes.TryAdd(i1, milliseconds))
+
+                    var requestInfo = new RequestInfo
                     {
-                        Thread.Sleep(1000);
+                        ResponseStatus = response.StatusCode,
+                        ResponseTime = sw.ElapsedMilliseconds
+                    };
+
+                    while (!asyncRequestInfos.TryAdd(i1, requestInfo))
+                    {
+                        Thread.Sleep(100);
                     }
                 }));
             }
 
             await Task.WhenAll(tasks);
 
-            var syncAverage = syncTimes.Select(t => t.Value).Sum() / syncTimes.Count;
-            var asyncAverage = asyncTimes.Select(t => t.Value).Sum() / asyncTimes.Count;
+            var syncRequestResponseTimes = syncRequestInfos.Values.Select(v => v.ResponseTime).ToArray();
+            var asyncRequestResponseTimes = asyncRequestInfos.Values.Select(v => v.ResponseTime).ToArray();
+
+            var syncAverage = syncRequestResponseTimes.Sum() / syncRequestResponseTimes.Count();
+            var asyncAverage = asyncRequestResponseTimes.Sum() / asyncRequestResponseTimes.Count();
+
             _outputHelper.WriteLine(new string('-', 20));
-            _outputHelper.WriteLine($"Sync Min: {syncTimes.Min(t => t.Value) / 1000.0}Sec");
+            _outputHelper.WriteLine($"Sync Min: {syncRequestResponseTimes.Min(t => t) / 1000.0}Sec");
             _outputHelper.WriteLine($"Sync Average: {syncAverage / 1000.0}Sec");
-            _outputHelper.WriteLine($"Sync Max: {syncTimes.Max(t => t.Value) / 1000.0}Sec");
-            _outputHelper.WriteLine($"Async Min: {asyncTimes.Min(t => t.Value) / 1000.0}Sec");
+            _outputHelper.WriteLine($"Sync Max: {syncRequestResponseTimes.Max(t => t) / 1000.0}Sec");
+            _outputHelper.WriteLine($"Async Min: {asyncRequestResponseTimes.Min(t => t) / 1000.0}Sec");
             _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0}Sec");
-            _outputHelper.WriteLine($"Async Max: {asyncTimes.Max(t => t.Value) / 1000.0}Sec");
+            _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0}Sec");
 
             var engine = new RazorLightEngineBuilder()
                 .UseFileSystemProject(Environment.CurrentDirectory)
                 .UseMemoryCachingProvider()
                 .Build();
 
-            var syncTimesArray = syncTimes.Values;
-            var asyncTimesArray = asyncTimes.Values;
+            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l});
+            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l});
 
-            var syncTimesIterationArray = syncTimes.Values.Select((l, i) => new[] {i, l});
-            var asyncTimesIterationArray = asyncTimes.Values.Select((l, i) => new[] {i, l});
-
-            var syncTimesDistributionArray = syncTimesArray.GroupBy(value => value)
+            var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
                 .Select(group => { return new[] {group.Key, group.Count()}; })
                 .OrderBy(x => x[1]);
-            var asyncTimesDistributionArray = asyncTimesArray.GroupBy(value => value)
+            var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
                 .Select(group => { return new[] {group.Key, group.Count()}; })
                 .OrderBy(x => x[1]);
+
+            var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
+                .Select(group => { return new dynamic[] {group.Key.ToString(), group.Count()}; });
+            var asyncResponseStatus = asyncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
+                .Select(group => { return new dynamic[] {group.Key.ToString(), group.Count()}; });
+
+
+            dynamic[][] getSummaryRange(long[] summaryData, int rangeCount)
+            {
+                var min = summaryData.Min();
+                var max = summaryData.Max();
+                var step = (max - min) / rangeCount;
+                var summaryRanges = new long[rangeCount];
+                var summaryRangeTitles = new string[rangeCount];
+
+                for (var i = min; i < max; i += step)
+                {
+                    var index = (i - min) / step;
+                    index = index == rangeCount ? rangeCount - 1 : index;
+                    summaryRangeTitles[index] = $"t < {i + step}ms";
+                    if (i != min)
+                        summaryRangeTitles[index] = $"{i}ms < " + summaryRangeTitles[index];
+                }
+
+                foreach (var d in summaryData)
+                    summaryRanges[d / step == rangeCount ? rangeCount - 1 : d / step] += 1;
+
+                return summaryRangeTitles.Select((v, i) => new dynamic[] {v, summaryRanges[i]}).ToArray();
+            }
+
+            var syncSummaryRanges = getSummaryRange(syncRequestResponseTimes, 5);
+            var asyncSummaryRanges = getSummaryRange(asyncRequestResponseTimes, 5);
 
             var model = new ExportResultModel
             {
+                SyncSummaryRange = JsonSerializer.Serialize(syncSummaryRanges),
+                AsyncSummaryRange = JsonSerializer.Serialize(asyncSummaryRanges),
+                SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),
+                AsyncResponseStatus = JsonSerializer.Serialize(asyncResponseStatus),
                 SyncTimesIterationsJsArray = JsonSerializer.Serialize(syncTimesIterationArray),
                 AsyncTimesIterationsJsArray = JsonSerializer.Serialize(asyncTimesIterationArray),
                 SyncTimesDistributionJsArray = JsonSerializer.Serialize(syncTimesDistributionArray),
@@ -180,9 +229,18 @@ namespace MarkopTest.LoadTest
                 Directory.Delete("LoadTestResult", true);
 
             Directory.CreateDirectory("LoadTestResult");
-            Directory.CreateDirectory("LoadTestResult/scripts");
-            foreach (var script in Directory.GetFiles("Template/scripts"))
-                File.Copy(script, Path.Combine("LoadTestResult/scripts", Path.GetFileName(script)));
+
+            void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
+            {
+                foreach (DirectoryInfo dir in source.GetDirectories())
+                    CopyFilesRecursively(dir, target.CreateSubdirectory(dir.Name));
+                foreach (FileInfo file in source.GetFiles())
+                    file.CopyTo(Path.Combine(target.FullName, file.Name));
+            }
+
+            var source = new DirectoryInfo("Template");
+            var target = new DirectoryInfo("LoadTestResult");
+            CopyFilesRecursively(source, target);
 
             await using var file = File.Create("LoadTestResult/Result.html");
             file.Write(Encoding.UTF8.GetBytes(result));
