@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -108,13 +109,23 @@ namespace MarkopTest.LoadTest
             {
                 var sw = Stopwatch.StartNew();
 
-                HttpResponseMessage response = await client.PostAsync(_uri, JsonContent.Create(data));
+
+                HttpResponseMessage response = null;
+
+                try
+                {
+                    response = await client.PostAsync(_uri, JsonContent.Create(data));
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
 
                 sw.Stop();
 
                 var requestInfo = new RequestInfo
                 {
-                    ResponseStatus = response.StatusCode,
+                    ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
                     ResponseTime = sw.ElapsedMilliseconds
                 };
 
@@ -131,13 +142,22 @@ namespace MarkopTest.LoadTest
                 {
                     var sw = Stopwatch.StartNew();
 
-                    HttpResponseMessage response = await client.PostAsync(_uri, JsonContent.Create(data));
+                    HttpResponseMessage response = null;
+
+                    try
+                    {
+                        response = await client.PostAsync(_uri, JsonContent.Create(data));
+                    }
+                    catch (Exception e)
+                    {
+                        // ignored
+                    }
 
                     sw.Stop();
 
                     var requestInfo = new RequestInfo
                     {
-                        ResponseStatus = response.StatusCode,
+                        ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
                         ResponseTime = sw.ElapsedMilliseconds
                     };
 
@@ -168,6 +188,7 @@ namespace MarkopTest.LoadTest
                 .UseFileSystemProject(Environment.CurrentDirectory)
                 .UseMemoryCachingProvider()
                 .Build();
+
 
             var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l});
             var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l});
@@ -203,7 +224,7 @@ namespace MarkopTest.LoadTest
                 }
 
                 foreach (var d in summaryData)
-                    summaryRanges[d / step == rangeCount ? rangeCount - 1 : d / step] += 1;
+                    summaryRanges[(d - min) / step == rangeCount ? rangeCount - 1 : (d - min) / step] += 1;
 
                 return summaryRangeTitles.Select((v, i) => new dynamic[] {v, summaryRanges[i]}).ToArray();
             }

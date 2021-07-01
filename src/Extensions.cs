@@ -3,18 +3,18 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace MarkopTest
 {
     public static class Extensions
     {
-        public static async Task<JObject> GetJson(this HttpResponseMessage response)
+        public static async Task<JsonElement?> GetJson(this HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
-            return string.IsNullOrWhiteSpace(content) ? new JObject() : JObject.Parse(content);
+            return string.IsNullOrWhiteSpace(content) ? null : JsonSerializer.Deserialize<JsonElement>(content);
         }
 
         public static async Task<HttpResponseMessage> PostAsync<T>(this HttpClient client, string url, T data)
