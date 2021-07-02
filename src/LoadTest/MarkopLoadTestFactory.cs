@@ -116,7 +116,7 @@ namespace MarkopTest.LoadTest
                 {
                     response = await client.PostAsync(_uri, content);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // ignored
                 }
@@ -150,7 +150,7 @@ namespace MarkopTest.LoadTest
                     {
                         response = await client.PostAsync(_uri, content);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // ignored
                     }
