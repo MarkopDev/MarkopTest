@@ -107,7 +107,7 @@ namespace MarkopTest.LoadTest
             for (var i = 0; i < 50; i++)
             {
                 var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-                
+
                 var sw = Stopwatch.StartNew();
 
                 HttpResponseMessage response = null;
@@ -140,8 +140,9 @@ namespace MarkopTest.LoadTest
                 var i1 = i;
                 tasks.Add(Task.Run(async () =>
                 {
-                    var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-                    
+                    var content = new StringContent(JsonSerializer.Serialize(data),
+                        Encoding.Default, "application/json");
+
                     var sw = Stopwatch.StartNew();
 
                     HttpResponseMessage response = null;
@@ -253,17 +254,15 @@ namespace MarkopTest.LoadTest
 
             Directory.CreateDirectory("LoadTestResult");
 
-            void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
+            static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
             {
-                foreach (DirectoryInfo dir in source.GetDirectories())
+                foreach (var dir in source.GetDirectories())
                     CopyFilesRecursively(dir, target.CreateSubdirectory(dir.Name));
-                foreach (FileInfo file in source.GetFiles())
-                    file.CopyTo(Path.Combine(target.FullName, file.Name));
+                foreach (var fileInfo in source.GetFiles())
+                    fileInfo.CopyTo(Path.Combine(target.FullName, fileInfo.Name));
             }
 
-            var source = new DirectoryInfo("Template");
-            var target = new DirectoryInfo("LoadTestResult");
-            CopyFilesRecursively(source, target);
+            CopyFilesRecursively(new DirectoryInfo("Template"), new DirectoryInfo("LoadTestResult"));
 
             await using var file = File.Create("LoadTestResult/Result.html");
             file.Write(Encoding.UTF8.GetBytes(result));
