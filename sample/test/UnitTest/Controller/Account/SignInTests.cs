@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace UnitTest.Controller.Account
 {
-    public class SignInTest : AppFactory
+    public class SignInTests : AppFactory
     {
-        public SignInTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
+        public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
             new MarkopUnitTestOptions {DefaultHttpClient = client})
         {
         }

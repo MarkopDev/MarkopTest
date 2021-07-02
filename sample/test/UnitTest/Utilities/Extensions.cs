@@ -50,7 +50,7 @@ namespace UnitTest.Utilities
                 Password = "TestPassword"
             };
 
-            var response = await client.PostAsync(new SignInTest(new TestOutputHelper(), client).Uri, data);
+            var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
 
             foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
                 client.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -69,7 +69,7 @@ namespace UnitTest.Utilities
                 Password = "TestPassword"
             };
 
-            var response = await client.PostAsync(new SignInTest(new TestOutputHelper(), client).Uri, data);
+            var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
 
             foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
                 client.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -88,7 +88,7 @@ namespace UnitTest.Utilities
                 Password = "OwnerPassword"
             };
 
-            var response = await client.PostAsync(new SignInTest(new TestOutputHelper(), client).Uri, data);
+            var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
 
             foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
                 client.DefaultRequestHeaders.Add("Cookie", cookie);

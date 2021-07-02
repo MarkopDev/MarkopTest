@@ -51,8 +51,10 @@ namespace MarkopTest.LoadTest
             #region AnalizeNamespace
 
             var actionName = GetType().Name;
+            if (actionName.EndsWith("Tests"))
+                actionName = actionName[..^5];
             if (actionName.EndsWith("Test"))
-                actionName = actionName.Substring(0, actionName.Length - 4);
+                actionName = actionName[..^4];
 
             var path = "";
             var nameSpace = GetType().Namespace;
@@ -63,6 +65,8 @@ namespace MarkopTest.LoadTest
 
                 nameSpace = nameSpace[..(nameSpace.Length - controller.Length - 1)];
 
+                if (controller.EndsWith("Tests"))
+                    controller = controller[..^5];
                 if (controller.EndsWith("Test"))
                     controller = controller[..^4];
 

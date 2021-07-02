@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace UnitTest.Controller.User
 {
-    public class GetProfileTest : AppFactory
+    public class GetProfileTests : AppFactory
     {
-        public GetProfileTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
+        public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
             new MarkopUnitTestOptions {DefaultHttpClient = client})
         {
         }

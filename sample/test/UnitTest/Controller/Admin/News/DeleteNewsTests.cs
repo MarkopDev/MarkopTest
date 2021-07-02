@@ -9,9 +9,9 @@ using Xunit.Abstractions;
 
 namespace UnitTest.Controller.Admin.News
 {
-    public class DeleteNewsTest : AppFactory
+    public class DeleteNewsTests : AppFactory
     {
-        public DeleteNewsTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
+        public DeleteNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
             new MarkopUnitTestOptions {DefaultHttpClient = client})
         {
         }

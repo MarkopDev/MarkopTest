@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace LoadTest.Controller.News
 {
-    public class GetNewsListSlowTest : AppFactory
+    public class GetNewsListSlowTests : AppFactory
     {
-        public GetNewsListSlowTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
+        public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
             new MarkopLoadTestOptions {DefaultHttpClient = client})
         {
         }
