@@ -48,7 +48,7 @@ namespace MarkopTest.UnitTest
             var actionName = GetType().Name;
             if (actionName.EndsWith("Tests"))
                 actionName = actionName[..^5];
-            if (actionName.EndsWith("Test"))
+            else if (actionName.EndsWith("Test"))
                 actionName = actionName[..^4];
 
             var path = "";
@@ -62,7 +62,7 @@ namespace MarkopTest.UnitTest
 
                 if (controller.EndsWith("Tests"))
                     controller = controller[..^5];
-                if (controller.EndsWith("Test"))
+                else if (controller.EndsWith("Test"))
                     controller = controller[..^4];
 
                 path = controller + "/" + path;
