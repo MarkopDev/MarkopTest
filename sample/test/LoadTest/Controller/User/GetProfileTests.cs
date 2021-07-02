@@ -6,7 +6,7 @@ using UnitTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LoadTest.ControllerTest.User
+namespace LoadTest.Controller.User
 {
     public class GetProfileTest : AppFactory
     {

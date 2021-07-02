@@ -3,7 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -51,7 +52,7 @@ namespace MarkopTest.UnitTest
             var path = "";
             var nameSpace = GetType().Namespace;
 
-            while (!(nameSpace?.EndsWith("ControllerTest") ?? true))
+            while (!(nameSpace?.EndsWith("Controller") ?? true))
             {
                 var controller = nameSpace.Split(".").Last();
 
@@ -92,7 +93,7 @@ namespace MarkopTest.UnitTest
             client ??= await GetDefaultClient() ?? Client;
 
             HttpResponseMessage response =
-                await client.PostAsync(Uri, JsonContent.Create(data));
+                await client.PostAsync(Uri, new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
 
             if (_testOptions.LogResponse)
                 _outputHelper.WriteLine(await response.GetContent());

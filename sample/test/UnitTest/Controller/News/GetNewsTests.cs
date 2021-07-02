@@ -7,7 +7,7 @@ using MarkopTest.UnitTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.ControllerTest.News
+namespace UnitTest.Controller.News
 {
     public class GetNewsTest : AppFactory
     {

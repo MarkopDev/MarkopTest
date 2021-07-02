@@ -1,27 +1,27 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Application.Features.News.Queries.GetNewsListFast;
+using Application.Features.News.Queries.GetNewsListSlow;
 using MarkopTest.LoadTest;
 using UnitTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LoadTest.ControllerTest.News
+namespace LoadTest.Controller.News
 {
-    public class GetNewsListFastTest : AppFactory
+    public class GetNewsListSlowTest : AppFactory
     {
-        public GetNewsListFastTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
+        public GetNewsListSlowTest(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
             new MarkopLoadTestOptions {DefaultHttpClient = client})
         {
         }
 
         [Theory]
         [InlineData(1, 100)]
-        public async Task GetNewsListFast(int pageNumber, int pageSize)
+        public async Task GetNewsListSlow(int pageNumber, int pageSize)
         {
             Client ??= await Host.UserClient();
             
-            var data = new GetNewsListFastQuery
+            var data = new GetNewsListSlowQuery
             {
                 PageSize = pageSize,
                 PageNumber = pageNumber,

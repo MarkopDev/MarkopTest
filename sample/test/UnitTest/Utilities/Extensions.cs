@@ -7,7 +7,7 @@ using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using UnitTest.ControllerTest.Account;
+using UnitTest.Controller.Account;
 using Xunit.Sdk;
 
 namespace UnitTest.Utilities

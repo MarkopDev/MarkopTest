@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -58,7 +57,7 @@ namespace MarkopTest.LoadTest
             var path = "";
             var nameSpace = GetType().Namespace;
 
-            while (!(nameSpace?.EndsWith("ControllerTest") ?? true))
+            while (!(nameSpace?.EndsWith("Controller") ?? true))
             {
                 var controller = nameSpace.Split(".").Last();
 
@@ -107,14 +106,15 @@ namespace MarkopTest.LoadTest
 
             for (var i = 0; i < 50; i++)
             {
+                var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+                
                 var sw = Stopwatch.StartNew();
-
 
                 HttpResponseMessage response = null;
 
                 try
                 {
-                    response = await client.PostAsync(_uri, JsonContent.Create(data));
+                    response = await client.PostAsync(_uri, content);
                 }
                 catch (Exception e)
                 {
@@ -140,13 +140,15 @@ namespace MarkopTest.LoadTest
                 var i1 = i;
                 tasks.Add(Task.Run(async () =>
                 {
+                    var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+                    
                     var sw = Stopwatch.StartNew();
 
                     HttpResponseMessage response = null;
 
                     try
                     {
-                        response = await client.PostAsync(_uri, JsonContent.Create(data));
+                        response = await client.PostAsync(_uri, content);
                     }
                     catch (Exception e)
                     {

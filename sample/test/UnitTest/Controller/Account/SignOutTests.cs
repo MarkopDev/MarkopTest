@@ -8,7 +8,7 @@ using MarkopTest.UnitTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.ControllerTest.Account
+namespace UnitTest.Controller.Account
 {
     public class SignOutTest : AppFactory
     {

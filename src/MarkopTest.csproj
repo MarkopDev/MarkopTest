@@ -1,16 +1,37 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+        <IsPackable>true</IsPackable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Markop Test</Title>
+        <Authors>Markop Team</Authors>
+        <Description>Merkop Test is a free, open source, focused testing tool for the ASP.NET Framework.</Description>
+        <Copyright>Copyright © 2021</Copyright>
+        <PackageProjectUrl>https://github.com/MarkopDev/MarkopTest</PackageProjectUrl>
+        <PackageLicenseUrl>https://raw.githubusercontent.com/MarkopDev/MarkopTest/master/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/MarkopDev/MarkopTest</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>UnitTest, LoadTest, StressTest, IntegrationTest, xUnit, Report, HTML, Chart</PackageTags>
+        <AssemblyVersion>1.1.0</AssemblyVersion>
+        <FileVersion>1.1.0</FileVersion>
+        <PackageVersion>1.1.0</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.7" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
         <PackageReference Include="RazorLight" Version="2.0.0-rc.3" />
         <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
-    
+
+    <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.7" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.16" />
+    </ItemGroup>
+
     <ItemGroup>
         <None Update="Template\Result.cshtml">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -22,13 +43,13 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Template\styles\main.css">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Template\scripts\summaryRange.js">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Template\scripts\responseStatus.js">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 </Project>

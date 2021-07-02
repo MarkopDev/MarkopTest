@@ -8,7 +8,7 @@ using UnitTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.ControllerTest.Admin.News
+namespace UnitTest.Controller.Admin.News
 {
     public class CreateNewsTest : AppFactory
     {

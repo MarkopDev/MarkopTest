@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.ControllerTest.User
+namespace UnitTest.Controller.User
 {
     public class GetProfileTest : AppFactory
     {

@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using MarkopTest.IntegrationTest;
-using UnitTest.ControllerTest.Admin.News;
-using UnitTest.ControllerTest.News;
+using UnitTest.Controller.Admin.News;
+using UnitTest.Controller.News;
 using UnitTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.ControllerTest
+namespace IntegrationTest.Controller
 {
     public class ManageNews : AppFactory
     {
