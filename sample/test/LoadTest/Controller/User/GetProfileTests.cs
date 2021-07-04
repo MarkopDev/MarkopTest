@@ -22,7 +22,7 @@ namespace LoadTest.Controller.User
 
             var data = new GetProfileQuery();
 
-            await Fetch(data, Client);
+            await Post(data, Client);
         }
     }
 }

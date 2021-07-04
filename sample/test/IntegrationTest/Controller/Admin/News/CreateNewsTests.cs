@@ -29,7 +29,7 @@ namespace IntegrationTest.Controller.Admin.News
                 Title = title
             };
 
-            var response = await Fetch(data, Client, new FetchOptions
+            var response = await Post(data, Client, new FetchOptions
             {
                 ErrorCode = errorCode
             });

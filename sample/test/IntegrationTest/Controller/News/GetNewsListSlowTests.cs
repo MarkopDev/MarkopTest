@@ -34,7 +34,7 @@ namespace IntegrationTest.Controller.News
                 PageNumber = pageNumber,
             };
 
-            var response = await Fetch(data, Client, new FetchOptions
+            var response = await Post(data, Client, new FetchOptions
             {
                 ErrorCode = errorCode
             });

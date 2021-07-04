@@ -91,13 +91,41 @@ namespace MarkopTest.IntegrationTest
             Host = hostBuilder.Start();
         }
 
-        protected async Task<HttpResponseMessage> Fetch(dynamic data, HttpClient client = null,
+        protected async Task<HttpResponseMessage> Post(dynamic data, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
             client ??= await GetDefaultClient() ?? Client;
 
             HttpResponseMessage response =
                 await client.PostAsync(Uri, new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
+
+            if (_testOptions.LogResponse)
+                _outputHelper.WriteLine(await response.GetContent());
+
+            Assert.True(await ValidateResponse(response, fetchOptions));
+
+            return response;
+        }
+
+        protected async Task<HttpResponseMessage> Get(dynamic data, HttpClient client = null,
+            TFetchOptions fetchOptions = null)
+        {
+            client ??= await GetDefaultClient() ?? Client;
+
+            var uri = Uri;
+
+            var properties = data.GetType().GetProperties();
+            foreach (var p in properties)
+            {
+                var value = p.GetValue(data, null);
+                if (value != null && p.Name != null && p.Name.Length >= 1)
+                {
+                    uri += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
+                           (string) value;
+                }
+            }
+            
+            var response = await client.GetAsync(uri);
 
             if (_testOptions.LogResponse)
                 _outputHelper.WriteLine(await response.GetContent());

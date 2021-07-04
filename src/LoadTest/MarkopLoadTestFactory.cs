@@ -96,7 +96,7 @@ namespace MarkopTest.LoadTest
             Host = hostBuilder.Start();
         }
 
-        protected async Task Fetch(dynamic data, HttpClient client = null,
+        protected async Task Post(dynamic data, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != Environments.Development)

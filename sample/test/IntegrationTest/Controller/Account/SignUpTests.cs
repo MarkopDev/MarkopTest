@@ -37,7 +37,7 @@ namespace IntegrationTest.Controller.Account
                 Platform = platform
             };
 
-            await Fetch(data, fetchOptions: new FetchOptions
+            await Post(data, fetchOptions: new FetchOptions
             {
                 ErrorCode = errorCode
             });
