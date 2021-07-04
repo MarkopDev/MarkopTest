@@ -97,10 +97,13 @@ namespace MarkopTest.IntegrationTest
             client ??= await GetDefaultClient() ?? Client;
 
             HttpResponseMessage response =
-                await client.PostAsync(Uri, new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
+                await client.PostAsync(Uri,
+                    new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
 
             if (_testOptions.LogResponse)
-                OutputHelper.WriteLine(await response.GetContent());
+                if (response.Content.Headers.FirstOrDefault(h => h.Key == "Content-Type").Value.FirstOrDefault()?
+                    .Contains("application/json") ?? false)
+                    OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 
@@ -124,11 +127,13 @@ namespace MarkopTest.IntegrationTest
                            (string) value;
                 }
             }
-            
+
             var response = await client.GetAsync(uri);
 
             if (_testOptions.LogResponse)
-                OutputHelper.WriteLine(await response.GetContent());
+                if (response.Content.Headers.FirstOrDefault(h => h.Key == "Content-Type").Value.FirstOrDefault()?
+                    .Contains("application/json") ?? false)
+                    OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 
