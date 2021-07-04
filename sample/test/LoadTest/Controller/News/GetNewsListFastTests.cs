@@ -1,8 +1,8 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Application.Features.News.Queries.GetNewsListFast;
+using IntegrationTest.Utilities;
 using MarkopTest.LoadTest;
-using UnitTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 

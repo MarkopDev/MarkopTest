@@ -5,16 +5,16 @@ using Application.Common.Enums;
 using Application.Common.Models;
 using Application.DTOs.News;
 using Application.Features.News.Queries.GetNewsListSlow;
-using MarkopTest.UnitTest;
+using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.Controller.News
+namespace IntegrationTest.Controller.News
 {
     public class GetNewsListSlowTests : AppFactory
     {
         public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopUnitTestOptions {DefaultHttpClient = client})
+            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 

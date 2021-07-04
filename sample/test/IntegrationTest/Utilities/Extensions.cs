@@ -5,12 +5,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
+using IntegrationTest.Controller.Account;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using UnitTest.Controller.Account;
 using Xunit.Sdk;
 
-namespace UnitTest.Utilities
+namespace IntegrationTest.Utilities
 {
     public static class Extensions
     {

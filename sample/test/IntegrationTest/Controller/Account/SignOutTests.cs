@@ -4,16 +4,16 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignOut;
-using MarkopTest.UnitTest;
+using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.Controller.Account
+namespace IntegrationTest.Controller.Account
 {
     public class SignOutTests : AppFactory
     {
         public SignOutTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopUnitTestOptions {DefaultHttpClient = client})
+            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 

@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using MarkopTest.IntegrationTest;
-using UnitTest.Controller.Admin.News;
-using UnitTest.Controller.News;
-using UnitTest.Utilities;
+using IntegrationTest.Controller.Admin.News;
+using IntegrationTest.Controller.News;
+using IntegrationTest.Utilities;
+using MarkopTest.FunctionalTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller
+namespace FunctionalTest.Controller
 {
     public class ManageNews : AppFactory
     {
-        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper, new MarkopIntegrationTestOptions())
+        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper, new MarkopFunctionalTestOptions())
         {
         }
 

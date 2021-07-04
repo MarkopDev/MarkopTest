@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace UnitTest.Persistence
+namespace FunctionalTest.Persistence
 {
     public class DatabaseInitializer
     {

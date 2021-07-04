@@ -1,4 +1,4 @@
-﻿namespace UnitTest
+﻿namespace IntegrationTest
 {
     public static class APIs
     {

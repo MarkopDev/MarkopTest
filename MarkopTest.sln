@@ -23,9 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CD0A9A1B-3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTest", "sample\test\LoadTest\LoadTest.csproj", "{25430339-D334-433E-A66C-69234D2B1B8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "sample\test\UnitTest\UnitTest.csproj", "{2AD3E64C-8B35-4CB8-A382-C3F082F4E7F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "sample\test\IntegrationTest\IntegrationTest.csproj", "{2AD3E64C-8B35-4CB8-A382-C3F082F4E7F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "sample\test\IntegrationTest\IntegrationTest.csproj", "{C237DCD5-0FC3-4B63-9F3C-E48C7A9E9F47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTest", "sample\test\FunctionalTest\FunctionalTest.csproj", "{C237DCD5-0FC3-4B63-9F3C-E48C7A9E9F47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

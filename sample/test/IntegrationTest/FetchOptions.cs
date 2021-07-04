@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Application.Common.Enums;
 
-namespace UnitTest
+namespace IntegrationTest
 {
     public class FetchOptions
     {

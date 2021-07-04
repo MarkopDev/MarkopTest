@@ -4,17 +4,17 @@ using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.DTOs.User;
 using Application.Features.User.Queries.GetProfile;
-using MarkopTest.UnitTest;
+using MarkopTest.IntegrationTest;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.Controller.User
+namespace IntegrationTest.Controller.User
 {
     public class GetProfileTests : AppFactory
     {
         public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopUnitTestOptions {DefaultHttpClient = client})
+            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 

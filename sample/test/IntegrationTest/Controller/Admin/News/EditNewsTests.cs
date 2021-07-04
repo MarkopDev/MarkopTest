@@ -3,17 +3,17 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.News.Commands.EditNews;
-using MarkopTest.UnitTest;
-using UnitTest.Utilities;
+using IntegrationTest.Utilities;
+using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTest.Controller.Admin.News
+namespace IntegrationTest.Controller.Admin.News
 {
     public class EditNewsTests : AppFactory
     {
         public EditNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopUnitTestOptions {DefaultHttpClient = client})
+            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 
