@@ -3,11 +3,12 @@
         name: 'Async Request',
         data: asyncSummaryRange.map(d => d[1])
     }],
+    labels: asyncSummaryRange.map(d => d[0]),
     chart: {
         type: 'bar',
         height: 350,
     },
-    labels: asyncSummaryRange.map(d => d[0]),
+    colors: [chartColor],
     dataLabels: {
         enabled: false,
     },

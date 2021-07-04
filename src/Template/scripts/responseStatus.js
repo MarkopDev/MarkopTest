@@ -1,10 +1,11 @@
 ﻿var options = {
     series: asyncResponseStatus.map(d => d[1]),
+    labels: asyncResponseStatus.map(d => d[0]),
     chart: {
         height: 350,
         type: 'polarArea'
     },
-    labels: asyncResponseStatus.map(d => d[0]),
+    colors: [chartColor],
     fill: {
         opacity: 1
     },
@@ -29,13 +30,6 @@
             spokes: {
                 strokeWidth: 0
             },
-        }
-    },
-    theme: {
-        monochrome: {
-            enabled: true,
-            shadeTo: 'light',
-            shadeIntensity: 0.6
         }
     }
 };

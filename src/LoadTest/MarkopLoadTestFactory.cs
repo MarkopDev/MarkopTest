@@ -240,6 +240,7 @@ namespace MarkopTest.LoadTest
 
             var model = new ExportResultModel
             {
+                ChartColor = _testOptions.ChartColor,
                 SyncSummaryRange = JsonSerializer.Serialize(syncSummaryRanges),
                 AsyncSummaryRange = JsonSerializer.Serialize(asyncSummaryRanges),
                 SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),

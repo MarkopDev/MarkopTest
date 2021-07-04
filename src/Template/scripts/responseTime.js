@@ -7,6 +7,7 @@
         type: 'line',
         height: 350,
     },
+    colors: [chartColor],
     dataLabels: {
         enabled: false,
     },

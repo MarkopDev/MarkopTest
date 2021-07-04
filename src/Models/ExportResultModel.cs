@@ -2,6 +2,7 @@
 {
     public class ExportResultModel
     {
+        public string ChartColor { get; set; }
         public string SyncSummaryRange { get; set; }
         public string AsyncSummaryRange { get; set; }
         public string SyncResponseStatus { get; set; }

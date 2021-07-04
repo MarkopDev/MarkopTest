@@ -7,6 +7,7 @@
         type: 'bar',
         height: 350,
     },
+    colors: [chartColor],
     dataLabels: {
         enabled: false,
     },
