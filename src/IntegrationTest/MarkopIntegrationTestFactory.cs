@@ -25,12 +25,12 @@ namespace MarkopTest.IntegrationTest
         public readonly string Uri;
         protected HttpClient Client;
         private readonly TTestOptions _testOptions;
-        private readonly ITestOutputHelper _outputHelper;
+        protected readonly ITestOutputHelper OutputHelper;
 
         protected MarkopIntegrationTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
         {
             _testOptions = testOptions;
-            _outputHelper = outputHelper;
+            OutputHelper = outputHelper;
 
             Client = testOptions.DefaultHttpClient;
 
@@ -100,7 +100,7 @@ namespace MarkopTest.IntegrationTest
                 await client.PostAsync(Uri, new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
 
             if (_testOptions.LogResponse)
-                _outputHelper.WriteLine(await response.GetContent());
+                OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 
@@ -128,7 +128,7 @@ namespace MarkopTest.IntegrationTest
             var response = await client.GetAsync(uri);
 
             if (_testOptions.LogResponse)
-                _outputHelper.WriteLine(await response.GetContent());
+                OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 
