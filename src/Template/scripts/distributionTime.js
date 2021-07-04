@@ -15,11 +15,6 @@
     },
     yaxis: {
         type: 'numeric',
-        labels: {
-            formatter: function (val) {
-                return val;
-            },
-        },
         title: {
             text: 'Request Count'
         },
@@ -32,9 +27,14 @@
     },
     tooltip: {
         shared: false,
-        y: {
+        x: {
             formatter: function (val) {
                 return (val / 1000) + ' second'
+            }
+        },
+        y: {
+            formatter: function (val) {
+                return val + ' count'
             }
         }
     }

@@ -142,7 +142,7 @@ namespace MarkopTest.LoadTest
             for (var i = 0; i < 1000; i++)
             {
                 var i1 = i;
-                tasks.Add(Task.Run(async () =>
+                tasks.Add(await Task.Run<Task>(async () =>
                 {
                     var content = new StringContent(JsonSerializer.Serialize(data),
                         Encoding.Default, "application/json");
@@ -195,7 +195,6 @@ namespace MarkopTest.LoadTest
                 .UseFileSystemProject(Environment.CurrentDirectory)
                 .UseMemoryCachingProvider()
                 .Build();
-
 
             var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l});
             var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l});
