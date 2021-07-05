@@ -12,7 +12,7 @@
         enabled: false,
     },
     title: {
-        text: 'Sync Request Response Time In Iteration',
+        text: 'Sync Request Response Time Per Iteration',
     },
     yaxis: {
         type: 'numeric',
@@ -48,6 +48,6 @@ new ApexCharts(document.querySelector("#response_time_async"), {
         data: asyncTimesIterationsJsArray
     }],
     title: {
-        text: 'Async Request Response Time In Iteration',
+        text: 'Async Request Response Time Per Iteration',
     }
 }).render();

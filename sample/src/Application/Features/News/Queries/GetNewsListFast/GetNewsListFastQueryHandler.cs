@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Models;
 using Application.Contracts.Persistence;
 using Application.DTOs.News;
+using Application.Utilities;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -32,8 +32,7 @@ namespace Application.Features.News.Queries.GetNewsListFast
         public async Task<PaginationViewModel<NewsListItemDto>> Handle(GetNewsListFastQuery request,
             CancellationToken cancellationToken)
         {
-            var userId = HttpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await UserManager.FindByIdAsync(userId);
+            var user = HttpContextAccessor.GetUser();
             var isAdmin = await UserManager.IsInRoleAsync(user, "Owner")
                           || await UserManager.IsInRoleAsync(user, "Admin");
 

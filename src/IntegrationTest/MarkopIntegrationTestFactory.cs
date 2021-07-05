@@ -96,7 +96,7 @@ namespace MarkopTest.IntegrationTest
         {
             client ??= await GetDefaultClient() ?? Client;
 
-            HttpResponseMessage response =
+            var response =
                 await client.PostAsync(Uri,
                     new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
 

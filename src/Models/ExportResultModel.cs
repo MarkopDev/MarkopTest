@@ -5,6 +5,8 @@
         public string ChartColor { get; set; }
         public string SyncSummaryRange { get; set; }
         public string AsyncSummaryRange { get; set; }
+        public string SyncMemorySamples { get; set; }
+        public string AsyncMemorySamples { get; set; }
         public string SyncResponseStatus { get; set; }
         public string AsyncResponseStatus { get; set; }
         public string SyncTimesIterationsJsArray { get; set; }

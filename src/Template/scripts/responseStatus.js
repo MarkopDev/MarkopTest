@@ -10,7 +10,7 @@
         opacity: 1
     },
     title: {
-        text: 'Async Request, Response Status',
+        text: 'Response Status of Async Request',
     },
     stroke: {
         width: 1,
@@ -40,5 +40,5 @@ new ApexCharts(document.querySelector("#response_status_sync"), {
     series: syncResponseStatus.map(d => d[1]),
     labels: syncResponseStatus.map(d => d[0]),
     title: {
-        text: 'Sync Request, Response Status',
+        text: 'Response Status of Sync Request',
     }}).render();

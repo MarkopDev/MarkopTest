@@ -105,12 +105,16 @@ namespace MarkopTest.LoadTest
             client ??= await GetDefaultClient() ?? Client;
 
             var tasks = new List<Task>();
+            var syncMemorySamples = new ConcurrentDictionary<int, long>();
+            var asyncMemorySamples = new ConcurrentDictionary<int, long>();
             var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
             var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
 
             for (var i = 0; i < 50; i++)
             {
                 var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+
+                var beforeRequestMemory = Process.GetCurrentProcess().PrivateMemorySize64;
 
                 var sw = Stopwatch.StartNew();
 
@@ -126,6 +130,11 @@ namespace MarkopTest.LoadTest
                 }
 
                 sw.Stop();
+
+                while (!syncMemorySamples.TryAdd(i, Process.GetCurrentProcess().PrivateMemorySize64 - beforeRequestMemory))
+                {
+                    Thread.Sleep(100);
+                }
 
                 var requestInfo = new RequestInfo
                 {
@@ -162,6 +171,11 @@ namespace MarkopTest.LoadTest
 
                     sw.Stop();
 
+                    while (!asyncMemorySamples.TryAdd(i1, Process.GetCurrentProcess().PrivateMemorySize64))
+                    {
+                        Thread.Sleep(100);
+                    }
+
                     var requestInfo = new RequestInfo
                     {
                         ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
@@ -176,6 +190,11 @@ namespace MarkopTest.LoadTest
             }
 
             await Task.WhenAll(tasks);
+
+            var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
+            var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();
+
+            var syncMemoryTrend = syncMemorySamples.Values.ToArray();
 
             var syncRequestResponseTimes = syncRequestInfos.Values.Select(v => v.ResponseTime).ToArray();
             var asyncRequestResponseTimes = asyncRequestInfos.Values.Select(v => v.ResponseTime).ToArray();
@@ -237,6 +256,8 @@ namespace MarkopTest.LoadTest
             var model = new ExportResultModel
             {
                 ChartColor = _testOptions.ChartColor,
+                SyncMemorySamples = JsonSerializer.Serialize(syncMemoryTrend),
+                AsyncMemorySamples = JsonSerializer.Serialize(asyncMemoryTrend),
                 SyncSummaryRange = JsonSerializer.Serialize(syncSummaryRanges),
                 AsyncSummaryRange = JsonSerializer.Serialize(asyncSummaryRanges),
                 SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),

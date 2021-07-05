@@ -60,6 +60,18 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12 col-xl-6 mk-card">
+                <div class="mk-card-body">
+                    <div id="memory_sync" style="height: 370px;"></div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-6 mk-card">
+                <div class="mk-card-body">
+                    <div id="memory_async" style="height: 370px;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 
@@ -67,6 +79,8 @@
     const chartColor = '@Raw(Model.ChartColor)';
     const syncSummaryRange = @Raw(Model.SyncSummaryRange);
     const asyncSummaryRange = @Raw(Model.AsyncSummaryRange);
+    const syncMemorySamples = @Raw(Model.SyncMemorySamples);
+    const asyncMemorySamples = @Raw(Model.AsyncMemorySamples);
     const syncResponseStatus = @Raw(Model.SyncResponseStatus);
     const asyncResponseStatus = @Raw(Model.AsyncResponseStatus);
 	const syncTimesIterationsJsArray = @Raw(Model.SyncTimesIterationsJsArray);
@@ -76,6 +90,7 @@
 </script>
 <script src="scripts/responseTime.js"></script>
 <script src="scripts/summaryRange.js"></script>
+<script src="scripts/memorySamples.js"></script>
 <script src="scripts/responseStatus.js"></script>
 <script src="scripts/distributionTime.js"></script>
 
