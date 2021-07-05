@@ -212,7 +212,7 @@ namespace MarkopTest.LoadTest
                 .Select(group => { return new dynamic[] {group.Key.ToString(), group.Count()}; });
 
 
-            dynamic[][] getSummaryRange(long[] summaryData, int rangeCount)
+            dynamic[][] GetSummaryRange(long[] summaryData, int rangeCount)
             {
                 var min = summaryData.Min();
                 var max = summaryData.Max();
@@ -220,23 +220,19 @@ namespace MarkopTest.LoadTest
                 var summaryRanges = new long[rangeCount];
                 var summaryRangeTitles = new string[rangeCount];
 
-                for (var i = min; i < max; i += step)
-                {
-                    var index = (i - min) / step;
-                    index = index == rangeCount ? rangeCount - 1 : index;
-                    summaryRangeTitles[index] = $"t < {i + step}ms";
-                    if (i != min)
-                        summaryRangeTitles[index] = $"{i}ms < " + summaryRangeTitles[index];
-                }
+                for (var i = 0; i < rangeCount; i++)
+                    summaryRangeTitles[i] = (i == 0 ? "" : $"{i * step}ms < ") + "t" +
+                                            (i == rangeCount - 1 ? "" : $" < {(i + 1) * step}ms");
 
                 foreach (var d in summaryData)
-                    summaryRanges[(d - min) / step == rangeCount ? rangeCount - 1 : (d - min) / step] += 1;
+                    summaryRanges[(d - min) / step >= rangeCount ? rangeCount - 1 : (d - min) / step]++;
 
                 return summaryRangeTitles.Select((v, i) => new dynamic[] {v, summaryRanges[i]}).ToArray();
             }
 
-            var syncSummaryRanges = getSummaryRange(syncRequestResponseTimes, 5);
-            var asyncSummaryRanges = getSummaryRange(asyncRequestResponseTimes, 5);
+
+            var syncSummaryRanges = GetSummaryRange(syncRequestResponseTimes, 5);
+            var asyncSummaryRanges = GetSummaryRange(asyncRequestResponseTimes, 5);
 
             var model = new ExportResultModel
             {
