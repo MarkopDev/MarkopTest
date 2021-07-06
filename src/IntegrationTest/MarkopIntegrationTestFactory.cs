@@ -101,8 +101,8 @@ namespace MarkopTest.IntegrationTest
                     new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
 
             if (_testOptions.LogResponse)
-                if (response.Content.Headers.FirstOrDefault(h => h.Key == "Content-Type").Value.FirstOrDefault()?
-                    .Contains("application/json") ?? false)
+                if (response.Content.Headers.Any(h =>
+                    h.Key == "Content-Type" && h.Value.Any(v => v.Contains("application/json"))))
                     OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
@@ -131,8 +131,8 @@ namespace MarkopTest.IntegrationTest
             var response = await client.GetAsync(uri);
 
             if (_testOptions.LogResponse)
-                if (response.Content.Headers.FirstOrDefault(h => h.Key == "Content-Type").Value.FirstOrDefault()?
-                    .Contains("application/json") ?? false)
+                if (response.Content.Headers.Any(h =>
+                    h.Key == "Content-Type" && h.Value.Any(v => v.Contains("application/json"))))
                     OutputHelper.WriteLine(await response.GetContent());
 
             Assert.True(await ValidateResponse(response, fetchOptions));
