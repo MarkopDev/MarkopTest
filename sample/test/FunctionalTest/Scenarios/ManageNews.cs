@@ -7,7 +7,7 @@ using MarkopTest.FunctionalTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace FunctionalTest.Controller
+namespace FunctionalTest.Scenarios
 {
     public class ManageNews : AppFactory
     {
