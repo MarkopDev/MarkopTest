@@ -1,8 +1,9 @@
 ﻿<h1 align="center">Markop Test</h1>
 <div align="center">
-    <p><a href="https://github.com/AliRezaBeigy/MarkopDev/MarkopTest/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="MIT License"></a>
+    <a href="https://github.com/AliRezaBeigy/MarkopDev/MarkopTest/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="MIT License"></a>
     <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PR&#39;s Welcome"></a>
-    <img src="https://img.shields.io/github/stars/MarkopDev/MarkopTest?style=for-the-badge" alt="GitHub Repo stars"></p>
+    <img src="https://img.shields.io/github/stars/MarkopDev/MarkopTest?style=for-the-badge" alt="GitHub Repo stars">
+    <img alt="Nuget" src="https://img.shields.io/nuget/dt/MarkopTest?style=for-the-badge">
 </div>
 
 Markop Test is a free, open-source, focused testing tool for the ASP.NET framework.
@@ -48,7 +49,7 @@ In summary, the process is as follows:
 2. Add integration test project as a reference of this project
 3. Create `AppFactory` class that extends **MarkopFunctionalTestFactory** class and pass web app's `Startup` class ([sample](https://github.com/MarkopDev/MarkopTest/blob/master/sample/test/FunctionalTest/AppFactory.cs))
 4. Create `Scenarios` folder
-5. Create `ManageNews` class extends your `AppFactory` into `Scenarios` folder like ([sample](https://github.com/MarkopDev/MarkopTest/blob/master/sample/test/FunctionalTest/Scenarios/ManageNews.cs))
+5. Create `ManageNews` class extends your `AppFactory` into `Scenarios` folder ([sample](https://github.com/MarkopDev/MarkopTest/blob/master/sample/test/FunctionalTest/Scenarios/ManageNews.cs))
 6. Write a method to call integration tests and pass input and compare the actual output with predetermined output ([sample](https://github.com/MarkopDev/MarkopTest/blob/master/sample/test/FunctionalTest/Scenarios/ManageNews.cs))
 7. Build project
 8. Open `Test Explorer` or `Unit Tests` panel and run the method to check the result
