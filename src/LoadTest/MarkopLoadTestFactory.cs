@@ -236,6 +236,13 @@ namespace MarkopTest.LoadTest
                 var min = summaryData.Min();
                 var max = summaryData.Max();
                 var step = (max - min) / rangeCount;
+
+                if (step == 0)
+                    return new[]
+                    {
+                        new dynamic[] {$"{min} < t < {max}", summaryData.Length}
+                    };
+
                 var summaryRanges = new long[rangeCount];
                 var summaryRangeTitles = new string[rangeCount];
 

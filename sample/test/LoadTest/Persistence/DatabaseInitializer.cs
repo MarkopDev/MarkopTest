@@ -37,7 +37,7 @@ namespace LoadTest.Persistence
                     while (!Context.InitializeHistories.Any(history => history.Version == "V1"))
                         Thread.Sleep(500);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debugger.Break();
                 // LoggerService.Error(e);
