@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\Result.cshtml">
+        <Link>Template\Result.cshtml</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\responseTime.js">
+        <Link>Template\scripts\responseTime.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\distributionTime.js">
+        <Link>Template\scripts\distributionTime.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\styles\main.css">
+        <Link>Template\styles\main.css</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\summaryRange.js">
+        <Link>Template\scripts\summaryRange.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\responseStatus.js">
+        <Link>Template\scripts\responseStatus.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\memorySamples.js">
+        <Link>Template\scripts\memorySamples.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+</ItemGroup>
+</Project>
