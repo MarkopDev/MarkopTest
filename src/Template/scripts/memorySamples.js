@@ -1,6 +1,6 @@
 ﻿var options = {
     series: [{
-        name: 'Sync Memory Samples',
+        name: 'Memory Size',
         data: syncMemorySamples
     }],
     chart: {
@@ -12,7 +12,14 @@
         enabled: false,
     },
     title: {
-        text: 'Sync Request Memory Per Iteration',
+        text: 'Memory per sample (sync)',
+    },
+    grid: {
+        xaxis: {
+            lines: {
+                show: true,
+            }
+        },
     },
     yaxis: {
         type: 'numeric',
@@ -28,11 +35,11 @@
     xaxis: {
         type: 'numeric',
         title: {
-            text: 'Iteration'
+            text: 'Sample'
         },
         labels: {
             formatter: function (val) {
-                return val
+                return Math.round(val)
             }
         },
     },
@@ -49,10 +56,10 @@
 new ApexCharts(document.querySelector("#memory_sync"), options).render();
 new ApexCharts(document.querySelector("#memory_async"), {
     ...options, series: [{
-        name: 'Async Memory Samples',
+        name: 'Memory Size',
         data: asyncMemorySamples
     }],
     title: {
-        text: 'Async Request Memory Per Iteration',
+        text: 'Memory per sample (async)',
     }
 }).render();

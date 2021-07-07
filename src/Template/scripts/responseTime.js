@@ -1,6 +1,6 @@
 ﻿var options = {
     series: [{
-        name: 'Sync Request',
+        name: 'Response time',
         data: syncTimesIterationsJsArray
     }],
     chart: {
@@ -11,8 +11,15 @@
     dataLabels: {
         enabled: false,
     },
+    grid: {
+        xaxis: {
+            lines: {
+                show: true,
+            }
+        },
+    },
     title: {
-        text: 'Sync Request Response Time Per Iteration',
+        text: 'Response time per iteration (sync)',
     },
     yaxis: {
         type: 'numeric',
@@ -44,10 +51,10 @@
 new ApexCharts(document.querySelector("#response_time_sync"), options).render();
 new ApexCharts(document.querySelector("#response_time_async"), {
     ...options, series: [{
-        name: 'Async Request',
+        name: 'Response time',
         data: asyncTimesIterationsJsArray
     }],
     title: {
-        text: 'Async Request Response Time Per Iteration',
+        text: 'Response time per iteration (async)',
     }
 }).render();

@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Hardware.Info;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -110,7 +111,7 @@ namespace MarkopTest.LoadTest
             var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
             var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
 
-            for (var i = 0; i < 50; i++)
+            for (var i = 0; i < _testOptions.SyncRequestCount; i++)
             {
                 var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
 
@@ -131,7 +132,12 @@ namespace MarkopTest.LoadTest
 
                 sw.Stop();
 
-                while (!syncMemorySamples.TryAdd(i, Process.GetCurrentProcess().PrivateMemorySize64 - beforeRequestMemory))
+                var memorySize = Process.GetCurrentProcess().PrivateMemorySize64 - beforeRequestMemory;
+
+                if (memorySize < 0)
+                    memorySize = 0;
+
+                while (!syncMemorySamples.TryAdd(i, memorySize))
                 {
                     Thread.Sleep(100);
                 }
@@ -148,7 +154,7 @@ namespace MarkopTest.LoadTest
                 }
             }
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < _testOptions.AsyncRequestCount; i++)
             {
                 var i1 = i;
                 tasks.Add(await Task.Run<Task>(async () =>
@@ -203,12 +209,12 @@ namespace MarkopTest.LoadTest
             var asyncAverage = asyncRequestResponseTimes.Sum() / asyncRequestResponseTimes.Count();
 
             _outputHelper.WriteLine(new string('-', 20));
-            _outputHelper.WriteLine($"Sync Min: {syncRequestResponseTimes.Min(t => t) / 1000.0}Sec");
-            _outputHelper.WriteLine($"Sync Average: {syncAverage / 1000.0}Sec");
-            _outputHelper.WriteLine($"Sync Max: {syncRequestResponseTimes.Max(t => t) / 1000.0}Sec");
-            _outputHelper.WriteLine($"Async Min: {asyncRequestResponseTimes.Min(t => t) / 1000.0}Sec");
-            _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0}Sec");
-            _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0}Sec");
+            _outputHelper.WriteLine($"Sync Min: {syncRequestResponseTimes.Min(t => t) / 1000.0} sec");
+            _outputHelper.WriteLine($"Sync Average: {syncAverage / 1000.0} sec");
+            _outputHelper.WriteLine($"Sync Max: {syncRequestResponseTimes.Max(t => t) / 1000.0} sec");
+            _outputHelper.WriteLine($"Async Min: {asyncRequestResponseTimes.Min(t => t) / 1000.0} sec");
+            _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
+            _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
 
             var engine = new RazorLightEngineBuilder()
                 .UseFileSystemProject(Environment.CurrentDirectory)
@@ -260,19 +266,36 @@ namespace MarkopTest.LoadTest
             var syncSummaryRanges = GetSummaryRange(syncRequestResponseTimes, 5);
             var asyncSummaryRanges = GetSummaryRange(asyncRequestResponseTimes, 5);
 
+            var hardwareInfo = new HardwareInfo();
+            
+            hardwareInfo.RefreshCPUList();
+            hardwareInfo.RefreshMemoryList();
+
             var model = new ExportResultModel
             {
+                ApiUrl = _uri,
                 ChartColor = _testOptions.ChartColor,
+                SyncRequestCount = _testOptions.SyncRequestCount,
+                AsyncRequestCount = _testOptions.AsyncRequestCount,
+                SyncAvgResponseTime = $"{syncAverage / 1000.0:0.00}",
+                AsyncAvgResponseTime = $"{asyncAverage / 1000.0:0.00}",
                 SyncMemorySamples = JsonSerializer.Serialize(syncMemoryTrend),
-                AsyncMemorySamples = JsonSerializer.Serialize(asyncMemoryTrend),
                 SyncSummaryRange = JsonSerializer.Serialize(syncSummaryRanges),
+                AsyncMemorySamples = JsonSerializer.Serialize(asyncMemoryTrend),
                 AsyncSummaryRange = JsonSerializer.Serialize(asyncSummaryRanges),
                 SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),
                 AsyncResponseStatus = JsonSerializer.Serialize(asyncResponseStatus),
+                OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                RamSize = $"{hardwareInfo.MemoryList.Sum(m => (long)m.Capacity) / 1024.0 / 1024.0 / 1024.0:0}",
                 SyncTimesIterationsJsArray = JsonSerializer.Serialize(syncTimesIterationArray),
                 AsyncTimesIterationsJsArray = JsonSerializer.Serialize(asyncTimesIterationArray),
                 SyncTimesDistributionJsArray = JsonSerializer.Serialize(syncTimesDistributionArray),
                 AsyncTimesDistributionJsArray = JsonSerializer.Serialize(asyncTimesDistributionArray),
+                SyncMinResponseTime = $"{syncRequestResponseTimes.Min(t => t) / 1000.0:0.00}",
+                SyncMaxResponseTime = $"{syncRequestResponseTimes.Max(t => t) / 1000.0:0.00}",
+                AsyncMinResponseTime = $"{asyncRequestResponseTimes.Min(t => t) / 1000.0:0.00}",
+                AsyncMaxResponseTime = $"{asyncRequestResponseTimes.Max(t => t) / 1000.0:0.00}",
+                CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
 
             var result = await engine.CompileRenderAsync("Template/Result.cshtml", model);
@@ -294,6 +317,10 @@ namespace MarkopTest.LoadTest
 
             await using var file = File.Create("LoadTestResult/Result.html");
             file.Write(Encoding.UTF8.GetBytes(result));
+
+            await using var jsonFile = File.Create("LoadTestResult/data.json");
+            jsonFile.Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(model)));
+
 
             if (_testOptions.OpenResultAfterFinished)
             {

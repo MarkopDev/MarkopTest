@@ -1,6 +1,6 @@
 ﻿var options = {
     series: [{
-        name: 'Async Request',
+        name: 'Request count',
         data: asyncTimesDistributionJsArray
     }],
     chart: {
@@ -11,8 +11,15 @@
     dataLabels: {
         enabled: false,
     },
+    grid: {
+        xaxis: {
+            lines: {
+                show: true,
+            }
+        },
+    },
     title: {
-        text: 'Async Request Response Time Distribution',
+        text: 'Response time distribution (async)',
     },
     yaxis: {
         type: 'numeric',
@@ -43,8 +50,8 @@
 
 new ApexCharts(document.querySelector("#distribution_time_async"), options).render();
 new ApexCharts(document.querySelector("#distribution_time_sync"), {...options, series:[{
-        name: 'Sync Request',
+        name: 'Request Count',
         data: syncTimesDistributionJsArray
     }], title: {
-        text: 'Sync Request Response Time Distribution',
+        text: 'Response time distribution (sync)',
     }}).render();

@@ -1,6 +1,6 @@
 ﻿var options = {
     series: [{
-        name: 'Async Request',
+        name: 'Request count',
         data: asyncSummaryRange.map(d => d[1])
     }],
     labels: asyncSummaryRange.map(d => d[0]),
@@ -13,7 +13,7 @@
         enabled: false,
     },
     title: {
-        text: 'Async Request Summary Response Time',
+        text: 'Response time (async)',
     },
     yaxis: {
         type: 'numeric',
@@ -44,10 +44,10 @@
 new ApexCharts(document.querySelector("#summary_rang_async"), options).render();
 new ApexCharts(document.querySelector("#summary_rang_sync"), {...options, 
     series: [{
-        name: 'Sync Request',
+        name: 'Request count',
         data: syncSummaryRange.map(d => d[1])
     }],
     labels: syncSummaryRange.map(d => d[0]),
     title: {
-        text: 'Sync Request Summary Response Time',
+        text: 'Response time (sync)',
     }}).render();

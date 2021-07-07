@@ -17,7 +17,7 @@ namespace LoadTest
         public AppFactory(ITestOutputHelper outputHelper, MarkopLoadTestOptions loadTestOptions) : base(outputHelper,
             loadTestOptions)
         {
-            loadTestOptions.ChartColor = "#da2d48";
+            loadTestOptions.ChartColor = "#427bcb";
         }
 
         protected override string GetUrl(string path, string actionName)

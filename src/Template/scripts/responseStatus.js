@@ -3,14 +3,14 @@
     labels: asyncResponseStatus.map(d => d[0]),
     chart: {
         height: 350,
-        type: 'polarArea'
+        type: 'donut'
     },
     colors: [chartColor],
     fill: {
         opacity: 1
     },
     title: {
-        text: 'Response Status of Async Request',
+        text: 'Response status (async)',
     },
     stroke: {
         width: 1,
@@ -40,5 +40,5 @@ new ApexCharts(document.querySelector("#response_status_sync"), {
     series: syncResponseStatus.map(d => d[1]),
     labels: syncResponseStatus.map(d => d[0]),
     title: {
-        text: 'Response Status of Sync Request',
+        text: 'Response status (sync)',
     }}).render();

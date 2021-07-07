@@ -10,69 +10,135 @@
 </head>
 
 <body>
+<div class="mk-header">
     <h1 class="mk-title">Markop Test</h1>
-    <div class="mk-content">
-        <div class="row">
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="summary_rang_sync" style="height: 370px;"></div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="summary_rang_async" style="height: 370px;"></div>
-                </div>
+    <div class="mk-info-content">
+        <div class="mk-info">
+            <span class="mk-info-label">API</span><span class="mk-info-value">@Raw(Model.ApiUrl)</span>
+        </div>
+        <div class="mk-info">
+            <span class="mk-info-label">OS</span><span class="mk-info-value">@Raw(Model.OS)</span>
+        </div>
+        <div class="mk-info">
+            <span class="mk-info-label">CPU</span><span class="mk-info-value">@Raw(Model.CpuName)</span>
+        </div>
+        <div class="mk-info">
+            <span class="mk-info-label">RAM</span><span class="mk-info-value">@Raw(Model.RamSize) GB</span>
+        </div>
+    </div>
+</div>
+<div class="mk-content">
+    <div class="row">
+        <div class="col-0 col-xl-1">
+        </div>
+        <div class="col-12  col-xl-4">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Request count (sync)</span><span class="mk-info-box-value">@(Model.SyncRequestCount)</span>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="response_status_sync" style="height: 370px;"></div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="response_status_async" style="height: 370px;"></div>
-                </div>
+        <div class="col-0 col-xl-2">
+        </div>
+        <div class="col-12  col-xl-4">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Request count (async)</span><span class="mk-info-box-value">@(Model.AsyncRequestCount)</span>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="response_time_sync" style="height: 370px;"></div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="response_time_async" style="height: 370px;"></div>
-                </div>
+        <div class="col-0 col-xl-1">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6  col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Max response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncMaxResponseTime) sec</span>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="distribution_time_sync" style="height: 370px;"></div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="distribution_time_async" style="height: 370px;"></div>
-                </div>
+        <div class="col-6  col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Average response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncAvgResponseTime) sec</span>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="memory_sync" style="height: 370px;"></div>
-                </div>
+        <div class="col-6  col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Min response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncMinResponseTime) sec</span>
             </div>
-            <div class="col-12 col-xl-6 mk-card">
-                <div class="mk-card-body">
-                    <div id="memory_async" style="height: 370px;"></div>
-                </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Max response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncMaxResponseTime) sec</span>
+            </div>
+        </div>
+        <div class="col-6  col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Average response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncAvgResponseTime) sec</span>
+            </div>
+        </div>
+        <div class="col-6  col-md-4 col-xl-2">
+            <div class="mk-info-box">
+                <span class="mk-info-box-label">Min response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncMinResponseTime) sec</span>
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="summary_rang_sync" style="height: 370px;"></div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="summary_rang_async" style="height: 370px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="response_status_sync" style="height: 370px;"></div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="response_status_async" style="height: 370px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="response_time_sync" style="height: 370px;"></div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="response_time_async" style="height: 370px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="distribution_time_sync" style="height: 370px;"></div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="distribution_time_async" style="height: 370px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="memory_sync" style="height: 370px;"></div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6 mk-card">
+            <div class="mk-card-body">
+                <div id="memory_async" style="height: 370px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 <script>
