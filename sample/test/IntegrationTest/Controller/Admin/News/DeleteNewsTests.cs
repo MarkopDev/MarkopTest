@@ -28,7 +28,7 @@ namespace IntegrationTest.Controller.Admin.News
                 NewsId = newsId
             };
 
-            await Post(data, Client, new FetchOptions
+            await PostJsonAsync(data, Client, new FetchOptions
             {
                 ErrorCode = errorCode
             });

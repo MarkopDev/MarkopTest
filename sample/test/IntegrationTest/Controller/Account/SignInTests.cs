@@ -30,7 +30,7 @@ namespace IntegrationTest.Controller.Account
                 Password = password
             };
 
-            await Post(data, fetchOptions: new FetchOptions
+            await PostJsonAsync(data, fetchOptions: new FetchOptions
             {
                 ErrorCode = errorCode
             });

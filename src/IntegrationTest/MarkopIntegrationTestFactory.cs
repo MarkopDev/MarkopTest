@@ -91,26 +91,36 @@ namespace MarkopTest.IntegrationTest
             Host = hostBuilder.Start();
         }
 
-        protected async Task<HttpResponseMessage> Post(dynamic data, HttpClient client = null,
-            TFetchOptions fetchOptions = null)
+        protected virtual async Task PrintOutput(HttpResponseMessage response)
         {
-            client ??= await GetDefaultClient() ?? Client;
-
-            var response =
-                await client.PostAsync(Uri,
-                    new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json"));
-
             if (_testOptions.LogResponse)
                 if (response.Content.Headers.Any(h =>
                     h.Key == "Content-Type" && h.Value.Any(v => v.Contains("application/json"))))
                     OutputHelper.WriteLine(await response.GetContent());
+        }
+
+        protected async Task<HttpResponseMessage> PostJsonAsync(dynamic data, HttpClient client = null,
+            TFetchOptions fetchOptions = null)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+            return await PostAsync(content, client, fetchOptions);
+        }
+
+        protected async Task<HttpResponseMessage> PostAsync(HttpContent content, HttpClient client = null,
+            TFetchOptions fetchOptions = null)
+        {
+            client ??= await GetDefaultClient() ?? Client;
+
+            var response = await client.PostAsync(Uri, content);
+
+            await PrintOutput(response);
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 
             return response;
         }
 
-        protected async Task<HttpResponseMessage> Get(dynamic data, HttpClient client = null,
+        protected async Task<HttpResponseMessage> GetAsync(dynamic data, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
             client ??= await GetDefaultClient() ?? Client;
@@ -130,10 +140,7 @@ namespace MarkopTest.IntegrationTest
 
             var response = await client.GetAsync(uri);
 
-            if (_testOptions.LogResponse)
-                if (response.Content.Headers.Any(h =>
-                    h.Key == "Content-Type" && h.Value.Any(v => v.Contains("application/json"))))
-                    OutputHelper.WriteLine(await response.GetContent());
+            await PrintOutput(response);
 
             Assert.True(await ValidateResponse(response, fetchOptions));
 

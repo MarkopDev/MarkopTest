@@ -38,7 +38,7 @@ namespace Infrastructure.MiddleWare
                 });
                 await context.Response.WriteAsync(newResponse);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debugger.Break();
                 // loggerService.Error(e);

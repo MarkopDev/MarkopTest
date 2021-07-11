@@ -97,7 +97,16 @@ namespace MarkopTest.LoadTest
             Host = hostBuilder.Start();
         }
 
-        protected async Task Post(dynamic data, HttpClient client = null,
+        protected async Task PostJsonAsync(dynamic data, HttpClient client = null,
+            TFetchOptions fetchOptions = null)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(data),
+                Encoding.Default, "application/json");
+
+            await PostAsync(content, client, fetchOptions);
+        }
+
+        protected async Task PostAsync(HttpContent content, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != Environments.Development)
@@ -113,8 +122,6 @@ namespace MarkopTest.LoadTest
 
             for (var i = 0; i < _testOptions.SyncRequestCount; i++)
             {
-                var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-
                 var beforeRequestMemory = Process.GetCurrentProcess().PrivateMemorySize64;
 
                 var sw = Stopwatch.StartNew();
@@ -159,9 +166,6 @@ namespace MarkopTest.LoadTest
                 var i1 = i;
                 tasks.Add(await Task.Run<Task>(async () =>
                 {
-                    var content = new StringContent(JsonSerializer.Serialize(data),
-                        Encoding.Default, "application/json");
-
                     var sw = Stopwatch.StartNew();
 
                     HttpResponseMessage response = null;
@@ -267,7 +271,7 @@ namespace MarkopTest.LoadTest
             var asyncSummaryRanges = GetSummaryRange(asyncRequestResponseTimes, 5);
 
             var hardwareInfo = new HardwareInfo();
-            
+
             hardwareInfo.RefreshCPUList();
             hardwareInfo.RefreshMemoryList();
 
@@ -286,7 +290,7 @@ namespace MarkopTest.LoadTest
                 SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),
                 AsyncResponseStatus = JsonSerializer.Serialize(asyncResponseStatus),
                 OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                RamSize = $"{hardwareInfo.MemoryList.Sum(m => (long)m.Capacity) / 1024.0 / 1024.0 / 1024.0:0}",
+                RamSize = $"{hardwareInfo.MemoryList.Sum(m => (long) m.Capacity) / 1024.0 / 1024.0 / 1024.0:0}",
                 SyncTimesIterationsJsArray = JsonSerializer.Serialize(syncTimesIterationArray),
                 AsyncTimesIterationsJsArray = JsonSerializer.Serialize(asyncTimesIterationArray),
                 SyncTimesDistributionJsArray = JsonSerializer.Serialize(syncTimesDistributionArray),
@@ -320,7 +324,6 @@ namespace MarkopTest.LoadTest
 
             await using var jsonFile = File.Create("LoadTestResult/data.json");
             jsonFile.Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(model)));
-
 
             if (_testOptions.OpenResultAfterFinished)
             {

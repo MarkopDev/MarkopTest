@@ -25,7 +25,7 @@ namespace Application.Common.Behaviours
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Debugger.Break();
                 // _loggerService.Error(ex);

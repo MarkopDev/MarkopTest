@@ -27,7 +27,7 @@ namespace LoadTest.Controller.News
                 PageNumber = pageNumber,
             };
 
-            await Post(data, Client);
+            await PostJsonAsync(data, Client);
         }
     }
 }

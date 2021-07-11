@@ -36,7 +36,7 @@ namespace Infrastructure.Persistence
 
                 await InitializerV1();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // LoggerService.Error(e);
                 Debugger.Break();

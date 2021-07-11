@@ -25,7 +25,7 @@ namespace Infrastructure.Repositories
             Repository = repository;
         }
 
-        public T? FirstOrDefault()
+        public T FirstOrDefault()
         {
             if (DisableTracking.HasValue)
                 return Repository.FirstOrDefault(Predicates, OrderBys, Includes, DisableTracking.Value,

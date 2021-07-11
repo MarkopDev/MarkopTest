@@ -48,7 +48,7 @@ namespace Application.Contracts.Persistence
 
         Task<T> GetById<S>(S id, List<Expression<Func<T, object>>> includes = null);
 
-        T? FirstOrDefault(List<Expression<Func<T, bool>>> predicates = null,
+        T FirstOrDefault(List<Expression<Func<T, bool>>> predicates = null,
             List<Func<IQueryable<T>, IOrderedQueryable<T>>> orderBys = null,
             List<Expression<Func<T, object>>> includes = null,
             bool disableTracking = false,

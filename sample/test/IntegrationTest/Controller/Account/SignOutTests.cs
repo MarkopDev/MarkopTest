@@ -25,14 +25,14 @@ namespace IntegrationTest.Controller.Account
             
             var data = new SignOutCommand();
 
-            var response = await Post(data, Client, new FetchOptions
+            var response = await PostJsonAsync(data, Client, new FetchOptions
             {
                 ErrorCode = errorCode
             });
 
             Client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie").ToArray()[0]);
 
-            await Post(data, Client, new FetchOptions
+            await PostJsonAsync(data, Client, new FetchOptions
             {
                 ErrorCode = null,
                 HttpStatusCode = HttpStatusCode.Unauthorized

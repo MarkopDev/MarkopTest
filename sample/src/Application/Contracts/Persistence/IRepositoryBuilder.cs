@@ -12,7 +12,7 @@ namespace Application.Contracts.Persistence
 {
     public interface IRepositoryBuilder<T> where T : IEntityBase
     {
-        T? FirstOrDefault();
+        T FirstOrDefault();
         Task<T> GetById<S>(S id);
         IQueryable<T> Queryable();
         Task<IReadOnlyList<T>> Get();
