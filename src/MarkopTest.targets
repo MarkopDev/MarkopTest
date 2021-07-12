@@ -36,5 +36,10 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)\..\Template\scripts\setup.js">
+        <Link>Template\scripts\setup.js</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
 </ItemGroup>
 </Project>

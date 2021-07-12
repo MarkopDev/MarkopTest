@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RazorLight;
 using Xunit.Abstractions;
 
 namespace MarkopTest.LoadTest
@@ -220,28 +219,31 @@ namespace MarkopTest.LoadTest
             _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
             _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
 
-            var engine = new RazorLightEngineBuilder()
-                .UseFileSystemProject(Environment.CurrentDirectory)
-                .UseMemoryCachingProvider()
-                .Build();
-
-            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l});
-            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l});
+            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
+            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
 
             var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
                 .Select(group => { return new[] {group.Key, group.Count()}; })
-                .OrderBy(x => x[1]);
+                .OrderBy(x => x[1]).ToArray();
             var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
                 .Select(group => { return new[] {group.Key, group.Count()}; })
-                .OrderBy(x => x[1]);
+                .OrderBy(x => x[1]).ToArray();
 
             var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
-                .Select(group => { return new dynamic[] {group.Key.ToString(), group.Count()}; });
+                .Select(group => new ResponseStatusResult
+                {
+                    Status = group.Key.ToString(),
+                    Count = group.Count()
+                }).ToArray();
             var asyncResponseStatus = asyncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
-                .Select(group => { return new dynamic[] {group.Key.ToString(), group.Count()}; });
+                .Select(group => new ResponseStatusResult
+                {
+                    Status = group.Key.ToString(),
+                    Count = group.Count()
+                }).ToArray();
 
 
-            dynamic[][] GetSummaryRange(long[] summaryData, int rangeCount)
+            ResponseTimeSummaryResult[] GetTimeSummaryRange(IReadOnlyCollection<long> summaryData, int rangeCount)
             {
                 var min = summaryData.Min();
                 var max = summaryData.Max();
@@ -250,10 +252,14 @@ namespace MarkopTest.LoadTest
                 if (step == 0)
                     return new[]
                     {
-                        new dynamic[] {$"{min} < t < {max}", summaryData.Length}
+                        new ResponseTimeSummaryResult
+                        {
+                            Range = $"{min} < t < {max}",
+                            Count = summaryData.Count
+                        }
                     };
 
-                var summaryRanges = new long[rangeCount];
+                var summaryRanges = new int[rangeCount];
                 var summaryRangeTitles = new string[rangeCount];
 
                 for (var i = 0; i < rangeCount; i++)
@@ -263,12 +269,17 @@ namespace MarkopTest.LoadTest
                 foreach (var d in summaryData)
                     summaryRanges[(d - min) / step >= rangeCount ? rangeCount - 1 : (d - min) / step]++;
 
-                return summaryRangeTitles.Select((v, i) => new dynamic[] {v, summaryRanges[i]}).ToArray();
+                return summaryRangeTitles.Select((v, i) =>
+                    new ResponseTimeSummaryResult
+                    {
+                        Range = v,
+                        Count = summaryRanges[i]
+                    }).ToArray();
             }
 
 
-            var syncSummaryRanges = GetSummaryRange(syncRequestResponseTimes, 5);
-            var asyncSummaryRanges = GetSummaryRange(asyncRequestResponseTimes, 5);
+            var syncTimeSummaryRanges = GetTimeSummaryRange(syncRequestResponseTimes, 5);
+            var asyncTimeSummaryRanges = GetTimeSummaryRange(asyncRequestResponseTimes, 5);
 
             var hardwareInfo = new HardwareInfo();
 
@@ -278,31 +289,29 @@ namespace MarkopTest.LoadTest
             var model = new ExportResultModel
             {
                 ApiUrl = _uri,
+                SyncAvgResponseTime = syncAverage,
+                AsyncAvgResponseTime = asyncAverage,
+                SyncMemorySamples = syncMemoryTrend,
                 ChartColor = _testOptions.ChartColor,
+                AsyncMemorySamples = asyncMemoryTrend,
+                SyncResponseStatus = syncResponseStatus,
+                AsyncResponseStatus = asyncResponseStatus,
+                SyncTimeSummaryRange = syncTimeSummaryRanges,
+                SyncTimesIterations = syncTimesIterationArray,
+                AsyncTimeSummaryRange = asyncTimeSummaryRanges,
+                AsyncTimesIterations = asyncTimesIterationArray,
                 SyncRequestCount = _testOptions.SyncRequestCount,
                 AsyncRequestCount = _testOptions.AsyncRequestCount,
-                SyncAvgResponseTime = $"{syncAverage / 1000.0:0.00}",
-                AsyncAvgResponseTime = $"{asyncAverage / 1000.0:0.00}",
-                SyncMemorySamples = JsonSerializer.Serialize(syncMemoryTrend),
-                SyncSummaryRange = JsonSerializer.Serialize(syncSummaryRanges),
-                AsyncMemorySamples = JsonSerializer.Serialize(asyncMemoryTrend),
-                AsyncSummaryRange = JsonSerializer.Serialize(asyncSummaryRanges),
-                SyncResponseStatus = JsonSerializer.Serialize(syncResponseStatus),
-                AsyncResponseStatus = JsonSerializer.Serialize(asyncResponseStatus),
+                SyncMinResponseTime = syncRequestResponseTimes.Min(),
+                SyncMaxResponseTime = syncRequestResponseTimes.Max(),
+                AsyncMinResponseTime = asyncRequestResponseTimes.Min(),
+                AsyncMaxResponseTime = asyncRequestResponseTimes.Max(),
+                SyncTimesDistribution = syncTimesDistributionArray,
+                AsyncTimesDistribution = asyncTimesDistributionArray,
                 OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                RamSize = $"{hardwareInfo.MemoryList.Sum(m => (long) m.Capacity) / 1024.0 / 1024.0 / 1024.0:0}",
-                SyncTimesIterationsJsArray = JsonSerializer.Serialize(syncTimesIterationArray),
-                AsyncTimesIterationsJsArray = JsonSerializer.Serialize(asyncTimesIterationArray),
-                SyncTimesDistributionJsArray = JsonSerializer.Serialize(syncTimesDistributionArray),
-                AsyncTimesDistributionJsArray = JsonSerializer.Serialize(asyncTimesDistributionArray),
-                SyncMinResponseTime = $"{syncRequestResponseTimes.Min(t => t) / 1000.0:0.00}",
-                SyncMaxResponseTime = $"{syncRequestResponseTimes.Max(t => t) / 1000.0:0.00}",
-                AsyncMinResponseTime = $"{asyncRequestResponseTimes.Min(t => t) / 1000.0:0.00}",
-                AsyncMaxResponseTime = $"{asyncRequestResponseTimes.Max(t => t) / 1000.0:0.00}",
+                RamSize = hardwareInfo.MemoryList.Sum(m => (long) m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
-
-            var result = await engine.CompileRenderAsync("Template/Result.cshtml", model);
 
             if (Directory.Exists("LoadTestResult"))
                 Directory.Delete("LoadTestResult", true);
@@ -319,11 +328,8 @@ namespace MarkopTest.LoadTest
 
             CopyFilesRecursively(new DirectoryInfo("Template"), new DirectoryInfo("LoadTestResult"));
 
-            await using var file = File.Create("LoadTestResult/Result.html");
-            file.Write(Encoding.UTF8.GetBytes(result));
-
-            await using var jsonFile = File.Create("LoadTestResult/data.json");
-            jsonFile.Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(model)));
+            await using var jsFile = File.Create("LoadTestResult/data.js");
+            jsFile.Write(Encoding.UTF8.GetBytes($"var data = JSON.parse('{JsonSerializer.Serialize(model)}');"));
 
             if (_testOptions.OpenResultAfterFinished)
             {

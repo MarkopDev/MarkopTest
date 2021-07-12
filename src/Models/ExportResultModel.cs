@@ -3,27 +3,27 @@
     public class ExportResultModel
     {
         public string OS { get; set; }
+        public long RamSize { get; set; }
         public string ApiUrl { get; set; }
-        public string RamSize { get; set; }
         public string CpuName { get; set; }
         public string ChartColor { get; set; }
         public int SyncRequestCount { get; set; }
         public int AsyncRequestCount { get; set; }
-        public string SyncSummaryRange { get; set; }
-        public string AsyncSummaryRange { get; set; }
-        public string SyncMemorySamples { get; set; }
-        public string AsyncMemorySamples { get; set; }
-        public string SyncResponseStatus { get; set; }
-        public string AsyncResponseStatus { get; set; }
-        public string SyncMaxResponseTime { get; set; }
-        public string SyncMinResponseTime { get; set; }
-        public string SyncAvgResponseTime { get; set; }
-        public string AsyncMaxResponseTime { get; set; }
-        public string AsyncMinResponseTime { get; set; }
-        public string AsyncAvgResponseTime { get; set; }
-        public string SyncTimesIterationsJsArray { get; set; }
-        public string AsyncTimesIterationsJsArray { get; set; }
-        public string SyncTimesDistributionJsArray { get; set; }
-        public string AsyncTimesDistributionJsArray { get; set; }
+        public long SyncMaxResponseTime { get; set; }
+        public long SyncMinResponseTime { get; set; }
+        public long SyncAvgResponseTime { get; set; }
+        public long[] SyncMemorySamples { get; set; }
+        public long[] AsyncMemorySamples { get; set; }
+        public long AsyncMaxResponseTime { get; set; }
+        public long AsyncMinResponseTime { get; set; }
+        public long AsyncAvgResponseTime { get; set; }
+        public long[][] SyncTimesIterations { get; set; }
+        public long[][] AsyncTimesIterations { get; set; }
+        public long[][] SyncTimesDistribution { get; set; }
+        public long[][] AsyncTimesDistribution { get; set; }
+        public ResponseStatusResult[] SyncResponseStatus { get; set; }
+        public ResponseStatusResult[] AsyncResponseStatus { get; set; }
+        public ResponseTimeSummaryResult[] SyncTimeSummaryRange { get; set; }
+        public ResponseTimeSummaryResult[] AsyncTimeSummaryRange { get; set; }
     }
 }

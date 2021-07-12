@@ -1,29 +1,36 @@
-﻿@model MarkopTest.Models.ExportResultModel
-<html>
-
+﻿<html lang="en">
 <head>
     <title>Markop Load Test Result</title>
     <link rel="stylesheet" href="styles/main.css">
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-</head>
 
-<body>
+    <script src="data.js"></script>
+    <script src="scripts/setup.js"></script>
+    <script src="scripts/responseTime.js"></script>
+    <script src="scripts/summaryRange.js"></script>
+    <script src="scripts/memorySamples.js"></script>
+    <script src="scripts/responseStatus.js"></script>
+    <script src="scripts/distributionTime.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body onload="setup()">
 <div class="mk-header">
     <h1 class="mk-title">Markop Test</h1>
     <div class="mk-info-content">
         <div class="mk-info">
-            <span class="mk-info-label">API</span><span class="mk-info-value">@Raw(Model.ApiUrl)</span>
+            <span class="mk-info-label">API</span><span class="mk-info-value" id="info-api"></span>
         </div>
         <div class="mk-info">
-            <span class="mk-info-label">OS</span><span class="mk-info-value">@Raw(Model.OS)</span>
+            <span class="mk-info-label">OS</span><span class="mk-info-value" id="info-os"></span>
         </div>
         <div class="mk-info">
-            <span class="mk-info-label">CPU</span><span class="mk-info-value">@Raw(Model.CpuName)</span>
+            <span class="mk-info-label">CPU</span><span class="mk-info-value" id="info-cpu"></span>
         </div>
         <div class="mk-info">
-            <span class="mk-info-label">RAM</span><span class="mk-info-value">@Raw(Model.RamSize) GB</span>
+            <span class="mk-info-label">RAM</span><span class="mk-info-value" id="info-ram"></span>
         </div>
     </div>
 </div>
@@ -33,14 +40,14 @@
         </div>
         <div class="col-12  col-xl-4">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Request count (sync)</span><span class="mk-info-box-value">@(Model.SyncRequestCount)</span>
+                <span class="mk-info-box-label">Request count (sync)</span><span class="mk-info-box-value" id="info-sync-request-count"></span>
             </div>
         </div>
         <div class="col-0 col-xl-2">
         </div>
         <div class="col-12  col-xl-4">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Request count (async)</span><span class="mk-info-box-value">@(Model.AsyncRequestCount)</span>
+                <span class="mk-info-box-label">Request count (async)</span><span class="mk-info-box-value" id="info-async-request-count"></span>
             </div>
         </div>
         <div class="col-0 col-xl-1">
@@ -49,32 +56,32 @@
     <div class="row">
         <div class="col-6  col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Max response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncMaxResponseTime) sec</span>
+                <span class="mk-info-box-label">Max response time (sync)</span><span class="mk-info-box-value" id="info-sync-max-response-time"></span>
             </div>
         </div>
         <div class="col-6  col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Average response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncAvgResponseTime) sec</span>
+                <span class="mk-info-box-label">Average response time (sync)</span><span class="mk-info-box-value" id="info-sync-avg-response-time"></span>
             </div>
         </div>
         <div class="col-6  col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Min response time (sync)</span><span class="mk-info-box-value">@Raw(Model.SyncMinResponseTime) sec</span>
+                <span class="mk-info-box-label">Min response time (sync)</span><span class="mk-info-box-value" id="info-sync-min-response-time"></span>
             </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Max response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncMaxResponseTime) sec</span>
+                <span class="mk-info-box-label">Max response time (async)</span><span class="mk-info-box-value" id="info-async-max-response-time"></span>
             </div>
         </div>
         <div class="col-6  col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Average response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncAvgResponseTime) sec</span>
+                <span class="mk-info-box-label">Average response time (async)</span><span class="mk-info-box-value" id="info-async-avg-response-time"></span>
             </div>
         </div>
         <div class="col-6  col-md-4 col-xl-2">
             <div class="mk-info-box">
-                <span class="mk-info-box-label">Min response time (async)</span><span class="mk-info-box-value">@Raw(Model.AsyncMinResponseTime) sec</span>
+                <span class="mk-info-box-label">Min response time (async)</span><span class="mk-info-box-value" id="info-async-min-response-time"></span>
             </div>
         </div>
     </div>
@@ -140,24 +147,4 @@
     </div>
 </div>
 </body>
-
-<script>
-    const chartColor = '@Raw(Model.ChartColor)';
-    const syncSummaryRange = @Raw(Model.SyncSummaryRange);
-    const asyncSummaryRange = @Raw(Model.AsyncSummaryRange);
-    const syncMemorySamples = @Raw(Model.SyncMemorySamples);
-    const asyncMemorySamples = @Raw(Model.AsyncMemorySamples);
-    const syncResponseStatus = @Raw(Model.SyncResponseStatus);
-    const asyncResponseStatus = @Raw(Model.AsyncResponseStatus);
-	const syncTimesIterationsJsArray = @Raw(Model.SyncTimesIterationsJsArray);
-	const asyncTimesIterationsJsArray = @Raw(Model.AsyncTimesIterationsJsArray);
-	const syncTimesDistributionJsArray = @Raw(Model.SyncTimesDistributionJsArray);
-	const asyncTimesDistributionJsArray = @Raw(Model.AsyncTimesDistributionJsArray);
-</script>
-<script src="scripts/responseTime.js"></script>
-<script src="scripts/summaryRange.js"></script>
-<script src="scripts/memorySamples.js"></script>
-<script src="scripts/responseStatus.js"></script>
-<script src="scripts/distributionTime.js"></script>
-
 </html>
