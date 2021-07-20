@@ -12,15 +12,15 @@ using DatabaseInitializer = LoadTest.Persistence.DatabaseInitializer;
 
 namespace LoadTest
 {
-    public class AppFactory : MarkopLoadTestFactory<Startup>
+    public class AppFactory : LoadTestFactory<Startup>
     {
-        public AppFactory(ITestOutputHelper outputHelper, MarkopLoadTestOptions loadTestOptions) : base(outputHelper,
+        public AppFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions) : base(outputHelper,
             loadTestOptions)
         {
-            loadTestOptions.ChartColor = "#427bcb";
+            loadTestOptions.BaseAddress = new Uri("https://api.signal.pokket.app");
         }
 
-        protected override string GetUrl(string path, string actionName)
+        protected override string GetUrl(string path, string actionName, LoadTestOptions loadTestOptions)
         {
             return APIs.V1 + path + actionName;
         }

@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hardware.Info;
+using MarkopTest.Handler;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -21,23 +22,20 @@ using Xunit.Abstractions;
 
 namespace MarkopTest.LoadTest
 {
-    public abstract class MarkopLoadTestFactory<TStartup, TFetchOptions, TTestOptions>
+    public abstract class LoadTestFactory<TStartup, TFetchOptions, TTestOptions>
         where TStartup : class
         where TFetchOptions : class
-        where TTestOptions : MarkopLoadTestOptions
+        where TTestOptions : LoadTestOptions
     {
-        protected IHost Host;
-        protected HttpClient Client;
+        private IHost _host;
         private readonly string _uri;
         private readonly TTestOptions _testOptions;
         private readonly ITestOutputHelper _outputHelper;
 
-        protected MarkopLoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
+        protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             _testOptions = testOptions;
             _outputHelper = outputHelper;
-
-            Client = testOptions.DefaultHttpClient;
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
@@ -45,7 +43,8 @@ namespace MarkopTest.LoadTest
             if (initial)
             {
                 ConfigureWebHost();
-                Initializer(Host.Services);
+
+                Initializer(_host.Services);
             }
 
             #region AnalizeNamespace
@@ -75,7 +74,7 @@ namespace MarkopTest.LoadTest
 
             #endregion
 
-            _uri = GetUrl(path, actionName);
+            _uri = GetUrl(path, actionName, testOptions);
         }
 
         private void ConfigureWebHost()
@@ -93,7 +92,7 @@ namespace MarkopTest.LoadTest
                     webHost.ConfigureTestServices(ConfigureTestServices);
                 });
 
-            Host = hostBuilder.Start();
+            _host = hostBuilder.Start();
         }
 
         protected async Task PostJsonAsync(dynamic data, HttpClient client = null,
@@ -111,7 +110,9 @@ namespace MarkopTest.LoadTest
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != Environments.Development)
                 return;
 
-            client ??= await GetDefaultClient() ?? Client;
+            client ??= GetClient();
+
+            await TestHandlerHelper.BeforeTest(client, typeof(LoadTestFactory<>));
 
             var tasks = new List<Task>();
             var syncMemorySamples = new ConcurrentDictionary<int, long>();
@@ -199,6 +200,8 @@ namespace MarkopTest.LoadTest
             }
 
             await Task.WhenAll(tasks);
+
+            await TestHandlerHelper.AfterTest(client, typeof(LoadTestFactory<>));
 
             var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
             var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();
@@ -337,32 +340,42 @@ namespace MarkopTest.LoadTest
             }
         }
 
-        protected virtual async Task<HttpClient> GetDefaultClient()
+        protected HttpClient GetClient()
         {
-            return _testOptions.DefaultHttpClient;
+            if (_testOptions.BaseAddress == null)
+                return _host.GetTestClient();
+            
+            var httpClientHandler = new HttpClientHandler
+            {
+                Proxy = _testOptions.Proxy
+            };
+            return new HttpClient(httpClientHandler)
+            {
+                BaseAddress = _testOptions.BaseAddress
+            };
         }
 
-        protected abstract string GetUrl(string path, string actionName);
+        protected abstract string GetUrl(string path, string actionName, LoadTestOptions fetchOptions);
         protected abstract void Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
     }
 
-    public abstract class MarkopLoadTestFactory<TStartup, TFetchOption>
-        : MarkopLoadTestFactory<TStartup, TFetchOption, MarkopLoadTestOptions>
+    public abstract class LoadTestFactory<TStartup, TFetchOption>
+        : LoadTestFactory<TStartup, TFetchOption, LoadTestOptions>
         where TStartup : class
         where TFetchOption : class
     {
-        protected MarkopLoadTestFactory(ITestOutputHelper outputHelper, MarkopLoadTestOptions loadTestOptions)
+        protected LoadTestFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions)
             : base(outputHelper, loadTestOptions)
         {
         }
     }
 
-    public abstract class MarkopLoadTestFactory<TStartup>
-        : MarkopLoadTestFactory<TStartup, dynamic, MarkopLoadTestOptions>
+    public abstract class LoadTestFactory<TStartup>
+        : LoadTestFactory<TStartup, dynamic, LoadTestOptions>
         where TStartup : class
     {
-        protected MarkopLoadTestFactory(ITestOutputHelper outputHelper, MarkopLoadTestOptions loadTestOptions)
+        protected LoadTestFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions)
             : base(outputHelper, loadTestOptions)
         {
         }

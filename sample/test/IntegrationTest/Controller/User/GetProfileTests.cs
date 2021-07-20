@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.DTOs.User;
 using Application.Features.User.Queries.GetProfile;
+using IntegrationTest.Handlers;
 using MarkopTest.IntegrationTest;
-using Microsoft.AspNetCore.TestHost;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,17 +14,18 @@ namespace IntegrationTest.Controller.User
     public class GetProfileTests : AppFactory
     {
         public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
+            new IntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 
         [Theory]
+        [UserHandler]
         [InlineData(null)]
         public async Task<ProfileDto> GetProfile(ErrorCode? errorCode = null)
         {
             var data = new GetProfileQuery();
 
-            var response = await PostJsonAsync(data, Client, new FetchOptions
+            var response = await PostJsonAsync(data, new FetchOptions
             {
                 ErrorCode = errorCode
             });
@@ -37,7 +38,6 @@ namespace IntegrationTest.Controller.User
         [Fact]
         public async Task GetProfile_UnauthorizedUser()
         {
-            Client = Host.GetTestClient();
             await GetProfile(ErrorCode.Unauthorized);
         }
     }

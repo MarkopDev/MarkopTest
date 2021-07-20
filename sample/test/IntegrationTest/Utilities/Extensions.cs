@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
 using IntegrationTest.Controller.Account;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Xunit.Sdk;
 
 namespace IntegrationTest.Utilities
@@ -39,15 +37,13 @@ namespace IntegrationTest.Utilities
             return await client.PostAsync(url, JsonContent.Create(data));
         }
 
-        public static async Task<HttpClient> UserClient(this IHost host)
+        public static async Task<HttpClient> User(this HttpClient client)
         {
-            var client = host.GetTestClient();
-
             var data = new SignInCommand
             {
-                Login = "TestUser@Markop.com",
+                Login = "Owner@Pokket.app",
                 Type = LoginType.Email,
-                Password = "TestPassword"
+                Password = "OwnerPassword"
             };
 
             var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
@@ -58,10 +54,8 @@ namespace IntegrationTest.Utilities
             return client;
         }
 
-        public static async Task<HttpClient> UserClient2(this IHost host)
+        public static async Task<HttpClient> User2(this HttpClient client)
         {
-            var client = host.GetTestClient();
-
             var data = new SignInCommand
             {
                 Login = "TestUser2@Markop.com",
@@ -77,10 +71,8 @@ namespace IntegrationTest.Utilities
             return client;
         }
 
-        public static async Task<HttpClient> OwnerClient(this IHost host)
+        public static async Task<HttpClient> Owner(this HttpClient client)
         {
-            var client = host.GetTestClient();
-
             var data = new SignInCommand
             {
                 Login = "TestOwner@Markop.com",

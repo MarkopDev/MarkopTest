@@ -5,6 +5,7 @@ using Application.Common.Enums;
 using Application.Common.Models;
 using Application.DTOs.News;
 using Application.Features.News.Queries.GetNewsListFast;
+using IntegrationTest.Handlers;
 using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,11 +15,12 @@ namespace IntegrationTest.Controller.News
     public class GetNewsListFastTests : AppFactory
     {
         public GetNewsListFastTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
+            new IntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 
         [Theory]
+        [UserHandler]
         [InlineData(1, 5, "")]
         [InlineData(1, 5, "new")]
         [InlineData(1, -5, "", ErrorCode.InvalidInput)]
@@ -34,7 +36,7 @@ namespace IntegrationTest.Controller.News
                 PageNumber = pageNumber,
             };
 
-            var response = await PostJsonAsync(data, Client, new FetchOptions
+            var response = await PostJsonAsync(data, new FetchOptions
             {
                 ErrorCode = errorCode
             });

@@ -1,7 +1,6 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Application.Features.User.Queries.GetProfile;
-using IntegrationTest.Utilities;
+using IntegrationTest.Handlers;
 using MarkopTest.LoadTest;
 using Xunit;
 using Xunit.Abstractions;
@@ -10,19 +9,18 @@ namespace LoadTest.Controller.User
 {
     public class GetProfileTests : AppFactory
     {
-        public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopLoadTestOptions {DefaultHttpClient = client})
+        public GetProfileTests(ITestOutputHelper outputHelper) : base(outputHelper,
+            new LoadTestOptions())
         {
         }
 
         [Fact]
+        [UserHandler]
         public async Task GetProfile()
         {
-            Client ??= await Host.UserClient();
-
             var data = new GetProfileQuery();
 
-            await PostJsonAsync(data, Client);
+            await PostJsonAsync(data);
         }
     }
 }

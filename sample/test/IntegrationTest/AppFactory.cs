@@ -16,9 +16,9 @@ using DatabaseInitializer = IntegrationTest.Persistence.DatabaseInitializer;
 
 namespace IntegrationTest
 {
-    public class AppFactory : MarkopIntegrationTestFactory<Startup, FetchOptions>
+    public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
     {
-        public AppFactory(ITestOutputHelper outputHelper, MarkopIntegrationTestOptions testOptions)
+        public AppFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
             : base(outputHelper, testOptions)
         {
         }
@@ -62,13 +62,6 @@ namespace IntegrationTest
                 return await httpResponseMessage.HasErrorCode(fetchOptions.ErrorCode);
 
             return true;
-        }
-
-        protected override async Task<HttpClient> GetDefaultClient()
-        {
-            if (Host == null)
-                return null;
-            return await Host.UserClient();
         }
     }
 }

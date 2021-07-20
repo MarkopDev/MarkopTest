@@ -10,9 +10,9 @@ using DatabaseInitializer = FunctionalTest.Persistence.DatabaseInitializer;
 
 namespace FunctionalTest
 {
-    public class AppFactory : MarkopFunctionalTestFactory<Startup>
+    public class AppFactory : FunctionalTestFactory<Startup>
     {
-        public AppFactory(ITestOutputHelper outputHelper, MarkopFunctionalTestOptions testOptions)
+        public AppFactory(ITestOutputHelper outputHelper, FunctionalTestOptions testOptions)
             : base(outputHelper, testOptions)
         {
         }

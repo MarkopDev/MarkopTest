@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MarkopTest.Handler;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -16,23 +17,20 @@ using Xunit.Abstractions;
 
 namespace MarkopTest.IntegrationTest
 {
-    public abstract class MarkopIntegrationTestFactory<TStartup, TFetchOptions, TTestOptions>
+    public abstract class IntegrationTestFactory<TStartup, TFetchOptions, TTestOptions>
         where TStartup : class
         where TFetchOptions : class
-        where TTestOptions : MarkopIntegrationTestOptions
+        where TTestOptions : IntegrationTestOptions
     {
-        protected IHost Host;
+        private IHost _host;
         public readonly string Uri;
-        protected HttpClient Client;
         private readonly TTestOptions _testOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
-        protected MarkopIntegrationTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
         {
             _testOptions = testOptions;
             OutputHelper = outputHelper;
-
-            Client = testOptions.DefaultHttpClient;
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
@@ -40,7 +38,7 @@ namespace MarkopTest.IntegrationTest
             if (initial)
             {
                 ConfigureWebHost();
-                Initializer(Host.Services);
+                Initializer(_host.Services);
             }
 
             #region AnalizeNamespace
@@ -88,7 +86,7 @@ namespace MarkopTest.IntegrationTest
                     webHost.ConfigureTestServices(ConfigureTestServices);
                 });
 
-            Host = hostBuilder.Start();
+            _host = hostBuilder.Start();
         }
 
         protected virtual async Task PrintOutput(HttpResponseMessage response)
@@ -99,19 +97,22 @@ namespace MarkopTest.IntegrationTest
                     OutputHelper.WriteLine(await response.GetContent());
         }
 
-        protected async Task<HttpResponseMessage> PostJsonAsync(dynamic data, HttpClient client = null,
+        protected async Task<HttpResponseMessage> PostJsonAsync(dynamic data,
             TFetchOptions fetchOptions = null)
         {
             var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-            return await PostAsync(content, client, fetchOptions);
+            return await PostAsync(content, fetchOptions);
         }
 
-        protected async Task<HttpResponseMessage> PostAsync(HttpContent content, HttpClient client = null,
-            TFetchOptions fetchOptions = null)
+        protected async Task<HttpResponseMessage> PostAsync(HttpContent content, TFetchOptions fetchOptions = null)
         {
-            client ??= await GetDefaultClient() ?? Client;
+            var client = GetClient();
+
+            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
 
             var response = await client.PostAsync(Uri, content);
+
+            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
 
             await PrintOutput(response);
 
@@ -120,10 +121,9 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        protected async Task<HttpResponseMessage> GetAsync(dynamic data, HttpClient client = null,
-            TFetchOptions fetchOptions = null)
+        protected async Task<HttpResponseMessage> GetAsync(dynamic data, TFetchOptions fetchOptions = null)
         {
-            client ??= await GetDefaultClient() ?? Client;
+            var client = GetClient();
 
             var uri = Uri;
 
@@ -138,7 +138,11 @@ namespace MarkopTest.IntegrationTest
                 }
             }
 
+            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
+
             var response = await client.GetAsync(uri);
+
+            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
 
             await PrintOutput(response);
 
@@ -147,9 +151,12 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        protected virtual async Task<HttpClient> GetDefaultClient()
+        protected HttpClient GetClient()
         {
-            return _testOptions.DefaultHttpClient;
+            if (_testOptions.DefaultHttpClient != null)
+                return _testOptions.DefaultHttpClient;
+
+            return _host.GetTestClient();
         }
 
         protected abstract string GetUrl(string path, string actionName);
@@ -160,22 +167,22 @@ namespace MarkopTest.IntegrationTest
             TFetchOptions fetchOptions);
     }
 
-    public abstract class MarkopIntegrationTestFactory<TStartup, TFetchOption>
-        : MarkopIntegrationTestFactory<TStartup, TFetchOption, MarkopIntegrationTestOptions>
+    public abstract class IntegrationTestFactory<TStartup, TFetchOption>
+        : IntegrationTestFactory<TStartup, TFetchOption, IntegrationTestOptions>
         where TStartup : class
         where TFetchOption : class
     {
-        protected MarkopIntegrationTestFactory(ITestOutputHelper outputHelper, MarkopIntegrationTestOptions testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
             : base(outputHelper, testOptions)
         {
         }
     }
 
-    public abstract class MarkopIntegrationTestFactory<TStartup>
-        : MarkopIntegrationTestFactory<TStartup, dynamic, MarkopIntegrationTestOptions>
+    public abstract class IntegrationTestFactory<TStartup>
+        : IntegrationTestFactory<TStartup, dynamic, IntegrationTestOptions>
         where TStartup : class
     {
-        protected MarkopIntegrationTestFactory(ITestOutputHelper outputHelper, MarkopIntegrationTestOptions testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
             : base(outputHelper, testOptions)
         {
         }

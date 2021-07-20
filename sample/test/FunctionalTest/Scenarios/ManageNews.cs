@@ -11,15 +11,15 @@ namespace FunctionalTest.Scenarios
 {
     public class ManageNews : AppFactory
     {
-        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper, new MarkopFunctionalTestOptions())
+        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper, new FunctionalTestOptions())
         {
         }
 
         [Fact]
         public async Task ManageNewsTest()
         {
-            var userClient = await Host.UserClient();
-            var ownerClient = await Host.OwnerClient();
+            var userClient = await GetClient().User();
+            var ownerClient = await GetClient().User();
 
             var newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 

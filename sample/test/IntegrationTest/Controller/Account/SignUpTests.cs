@@ -11,7 +11,7 @@ namespace IntegrationTest.Controller.Account
     public class SignUpTests : AppFactory
     {
         public SignUpTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
+            new IntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 
@@ -37,7 +37,7 @@ namespace IntegrationTest.Controller.Account
                 Platform = platform
             };
 
-            await PostJsonAsync(data, fetchOptions: new FetchOptions
+            await PostJsonAsync(data, new FetchOptions
             {
                 ErrorCode = errorCode
             });

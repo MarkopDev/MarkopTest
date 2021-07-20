@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -10,15 +11,15 @@ using Xunit.Abstractions;
 
 namespace MarkopTest.FunctionalTest
 {
-    public abstract class MarkopFunctionalTestFactory<TStartup, TTestOptions>
+    public abstract class FunctionalTestFactory<TStartup, TTestOptions>
         where TStartup : class
-        where TTestOptions : MarkopFunctionalTestOptions
+        where TTestOptions : FunctionalTestOptions
     {
-        protected IHost Host;
+        private IHost _host;
         private readonly TTestOptions _testOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
-        protected MarkopFunctionalTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
+        protected FunctionalTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
         {
             _testOptions = testOptions;
             OutputHelper = outputHelper;
@@ -29,7 +30,7 @@ namespace MarkopTest.FunctionalTest
             if (initial)
             {
                 ConfigureWebHost();
-                Initializer(Host.Services);
+                Initializer(_host.Services);
             }
         }
 
@@ -48,18 +49,23 @@ namespace MarkopTest.FunctionalTest
                     webHost.ConfigureTestServices(ConfigureTestServices);
                 });
 
-            Host = hostBuilder.Start();
+            _host = hostBuilder.Start();
+        }
+
+        protected HttpClient GetClient()
+        {
+            return _host.GetTestClient();
         }
 
         protected abstract void Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
     }
 
-    public abstract class MarkopFunctionalTestFactory<TStartup>
-        : MarkopFunctionalTestFactory<TStartup, MarkopFunctionalTestOptions>
+    public abstract class FunctionalTestFactory<TStartup>
+        : FunctionalTestFactory<TStartup, FunctionalTestOptions>
         where TStartup : class
     {
-        protected MarkopFunctionalTestFactory(ITestOutputHelper outputHelper, MarkopFunctionalTestOptions testOptions)
+        protected FunctionalTestFactory(ITestOutputHelper outputHelper, FunctionalTestOptions testOptions)
             : base(outputHelper, testOptions)
         {
         }

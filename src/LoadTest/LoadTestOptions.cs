@@ -1,13 +1,15 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net;
 
 namespace MarkopTest.LoadTest
 {
-    public class MarkopLoadTestOptions
+    public class LoadTestOptions
     {
-        public string ChartColor { get; set; } = "";
+        public WebProxy Proxy { get; set; }
+        public Uri BaseAddress { get; set; }
         public int SyncRequestCount { get; set; } = 50;
-        public HttpClient DefaultHttpClient { get; set; }
         public int AsyncRequestCount { get; set; } = 1000;
+        public string ChartColor { get; set; } = "#427bcb";
         public bool OpenResultAfterFinished { get; set; } = true;
     }
 }

@@ -11,7 +11,7 @@ namespace IntegrationTest.Controller.Account
     public class SignInTests : AppFactory
     {
         public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new MarkopIntegrationTestOptions {DefaultHttpClient = client})
+            new IntegrationTestOptions {DefaultHttpClient = client})
         {
         }
 
@@ -30,7 +30,7 @@ namespace IntegrationTest.Controller.Account
                 Password = password
             };
 
-            await PostJsonAsync(data, fetchOptions: new FetchOptions
+            await PostJsonAsync(data, new FetchOptions
             {
                 ErrorCode = errorCode
             });
