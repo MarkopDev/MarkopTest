@@ -13,9 +13,9 @@
         <RepositoryUrl>https://github.com/MarkopDev/MarkopTest</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>UnitTest, LoadTest, StressTest, IntegrationTest, FunctionalTest, xUnit, Report, HTML, Chart</PackageTags>
-        <AssemblyVersion>1.4.4</AssemblyVersion>
-        <FileVersion>1.4.4</FileVersion>
-        <PackageVersion>1.4.4</PackageVersion>
+        <AssemblyVersion>1.4.5</AssemblyVersion>
+        <FileVersion>1.4.5</FileVersion>
+        <PackageVersion>1.4.5</PackageVersion>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     </PropertyGroup>

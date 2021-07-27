@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
-using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,8 +9,7 @@ namespace IntegrationTest.Controller.Account
 {
     public class SignInTests : AppFactory
     {
-        public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new IntegrationTestOptions {DefaultHttpClient = client})
+        public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
         {
         }
 

@@ -6,7 +6,6 @@ using Application.Common.Models;
 using Application.DTOs.News;
 using Application.Features.News.Queries.GetNewsListSlow;
 using IntegrationTest.Handlers;
-using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,8 +13,7 @@ namespace IntegrationTest.Controller.News
 {
     public class GetNewsListSlowTests : AppFactory
     {
-        public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new IntegrationTestOptions {DefaultHttpClient = client})
+        public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
         {
         }
 

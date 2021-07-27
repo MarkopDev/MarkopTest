@@ -1,38 +1,37 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Diagnostics;
+using Xunit.Abstractions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Xunit.Abstractions;
 
 namespace MarkopTest.FunctionalTest
 {
     public abstract class FunctionalTestFactory<TStartup, TTestOptions>
         where TStartup : class
-        where TTestOptions : FunctionalTestOptions
+        where TTestOptions : FunctionalTestOptions, new()
     {
         private static IHost _host;
         private readonly TTestOptions _testOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
-        protected FunctionalTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
+        protected FunctionalTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
-            _testOptions = testOptions;
             OutputHelper = outputHelper;
+            _testOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
             if (initial && _host == null)
-            {
                 ConfigureWebHost();
-                if (_host != null)
-                    Initializer(_host.Services);
-            }
+
+            if (initial && _host != null)
+                Initializer(_host.Services);
         }
 
         private void ConfigureWebHost()
@@ -66,6 +65,11 @@ namespace MarkopTest.FunctionalTest
         : FunctionalTestFactory<TStartup, FunctionalTestOptions>
         where TStartup : class
     {
+        protected FunctionalTestFactory(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         protected FunctionalTestFactory(ITestOutputHelper outputHelper, FunctionalTestOptions testOptions)
             : base(outputHelper, testOptions)
         {

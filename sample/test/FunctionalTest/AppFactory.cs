@@ -1,19 +1,18 @@
-﻿using System;
+﻿using WebAPI;
+using System;
 using System.Linq;
-using Infrastructure.Persistence;
+using Xunit.Abstractions;
 using MarkopTest.FunctionalTest;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using WebAPI;
-using Xunit.Abstractions;
 using DatabaseInitializer = FunctionalTest.Persistence.DatabaseInitializer;
 
 namespace FunctionalTest
 {
     public class AppFactory : FunctionalTestFactory<Startup>
     {
-        public AppFactory(ITestOutputHelper outputHelper, FunctionalTestOptions testOptions)
-            : base(outputHelper, testOptions)
+        public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
 

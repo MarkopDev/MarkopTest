@@ -25,7 +25,7 @@ namespace MarkopTest.LoadTest
     public abstract class LoadTestFactory<TStartup, TFetchOptions, TTestOptions>
         where TStartup : class
         where TFetchOptions : class
-        where TTestOptions : LoadTestOptions
+        where TTestOptions : LoadTestOptions, new()
     {
         private IHost _host;
         private readonly string _uri;
@@ -34,8 +34,8 @@ namespace MarkopTest.LoadTest
 
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
-            _testOptions = testOptions;
             _outputHelper = outputHelper;
+            _testOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
@@ -344,7 +344,7 @@ namespace MarkopTest.LoadTest
         {
             if (_testOptions.BaseAddress == null)
                 return _host.GetTestClient();
-            
+
             var httpClientHandler = new HttpClientHandler
             {
                 Proxy = _testOptions.Proxy
@@ -365,6 +365,11 @@ namespace MarkopTest.LoadTest
         where TStartup : class
         where TFetchOption : class
     {
+        protected LoadTestFactory(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         protected LoadTestFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions)
             : base(outputHelper, loadTestOptions)
         {
@@ -375,6 +380,11 @@ namespace MarkopTest.LoadTest
         : LoadTestFactory<TStartup, dynamic, LoadTestOptions>
         where TStartup : class
     {
+        protected LoadTestFactory(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         protected LoadTestFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions)
             : base(outputHelper, loadTestOptions)
         {

@@ -5,7 +5,6 @@ using Application.Common.Enums;
 using Application.DTOs.User;
 using Application.Features.User.Queries.GetProfile;
 using IntegrationTest.Handlers;
-using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,8 +12,7 @@ namespace IntegrationTest.Controller.User
 {
     public class GetProfileTests : AppFactory
     {
-        public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new IntegrationTestOptions {DefaultHttpClient = client})
+        public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
         {
         }
 

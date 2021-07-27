@@ -18,8 +18,8 @@ namespace IntegrationTest
 {
     public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
     {
-        public AppFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
-            : base(outputHelper, testOptions)
+        public AppFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
+            : base(outputHelper, defaultClient)
         {
         }
 

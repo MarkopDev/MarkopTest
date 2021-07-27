@@ -14,10 +14,11 @@ namespace LoadTest
 {
     public class AppFactory : LoadTestFactory<Startup>
     {
-        public AppFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions) : base(outputHelper,
-            loadTestOptions)
+        public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper, new LoadTestOptions
         {
-            loadTestOptions.BaseColor = "#078889";
+            BaseColor = "#078889"
+        })
+        {
         }
 
         protected override string GetUrl(string path, string actionName, LoadTestOptions loadTestOptions)

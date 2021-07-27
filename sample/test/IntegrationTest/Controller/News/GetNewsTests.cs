@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.News.Queries.GetNews;
 using IntegrationTest.Handlers;
-using MarkopTest.IntegrationTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,8 +11,7 @@ namespace IntegrationTest.Controller.News
 {
     public class GetNewsTests : AppFactory
     {
-        public GetNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper,
-            new IntegrationTestOptions {DefaultHttpClient = client})
+        public GetNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
         {
         }
 

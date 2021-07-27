@@ -1,46 +1,48 @@
-﻿using System;
-using System.Diagnostics;
+﻿using Xunit;
+using System;
 using System.IO;
+using System.Text;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Xunit.Abstractions;
 using MarkopTest.Handler;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace MarkopTest.IntegrationTest
 {
     public abstract class IntegrationTestFactory<TStartup, TFetchOptions, TTestOptions>
         where TStartup : class
         where TFetchOptions : class
-        where TTestOptions : IntegrationTestOptions
+        where TTestOptions : IntegrationTestOptions, new()
     {
         private static IHost _host;
         public readonly string Uri;
         private readonly TTestOptions _testOptions;
+        protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
 
-        protected IntegrationTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient,
+            TTestOptions testOptions = null)
         {
-            _testOptions = testOptions;
             OutputHelper = outputHelper;
+            DefaultClient = defaultClient;
+            _testOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
             if (initial && _host == null)
-            {
                 ConfigureWebHost();
-                if (_host != null)
-                    Initializer(_host.Services);
-            }
+
+            if (initial && _host != null)
+                Initializer(_host.Services);
 
             #region AnalizeNamespace
 
@@ -154,10 +156,7 @@ namespace MarkopTest.IntegrationTest
 
         protected HttpClient GetClient()
         {
-            if (_testOptions.DefaultHttpClient != null)
-                return _testOptions.DefaultHttpClient;
-
-            return _host.GetTestClient();
+            return DefaultClient ?? _host.GetTestClient();
         }
 
         protected abstract string GetUrl(string path, string actionName);
@@ -173,8 +172,14 @@ namespace MarkopTest.IntegrationTest
         where TStartup : class
         where TFetchOption : class
     {
-        protected IntegrationTestFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
-            : base(outputHelper, testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
+            : base(outputHelper, defaultClient)
+        {
+        }
+
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient,
+            IntegrationTestOptions testOptions)
+            : base(outputHelper, defaultClient, testOptions)
         {
         }
     }
@@ -183,8 +188,14 @@ namespace MarkopTest.IntegrationTest
         : IntegrationTestFactory<TStartup, dynamic, IntegrationTestOptions>
         where TStartup : class
     {
-        protected IntegrationTestFactory(ITestOutputHelper outputHelper, IntegrationTestOptions testOptions)
-            : base(outputHelper, testOptions)
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
+            : base(outputHelper, defaultClient)
+        {
+        }
+
+        protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient,
+            IntegrationTestOptions testOptions)
+            : base(outputHelper, defaultClient, testOptions)
         {
         }
     }

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using IntegrationTest.Controller.Admin.News;
 using IntegrationTest.Controller.News;
 using IntegrationTest.Utilities;
-using MarkopTest.FunctionalTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,7 +10,7 @@ namespace FunctionalTest.Scenarios
 {
     public class ManageNews : AppFactory
     {
-        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper, new FunctionalTestOptions())
+        public ManageNews(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
 

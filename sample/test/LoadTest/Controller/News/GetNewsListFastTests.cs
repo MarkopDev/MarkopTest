@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Application.Features.News.Queries.GetNewsListFast;
 using IntegrationTest.Handlers;
-using MarkopTest.LoadTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -9,8 +8,7 @@ namespace LoadTest.Controller.News
 {
     public class GetNewsListFastTests : AppFactory
     {
-        public GetNewsListFastTests(ITestOutputHelper outputHelper) : base(outputHelper,
-            new LoadTestOptions())
+        public GetNewsListFastTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
 
