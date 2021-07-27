@@ -41,9 +41,9 @@ namespace IntegrationTest.Utilities
         {
             var data = new SignInCommand
             {
-                Login = "Owner@Pokket.app",
+                Login = "TestUser@Markop.com",
                 Type = LoginType.Email,
-                Password = "OwnerPassword"
+                Password = "TestPassword"
             };
 
             var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);

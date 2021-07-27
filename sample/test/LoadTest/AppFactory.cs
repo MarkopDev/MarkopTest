@@ -17,7 +17,7 @@ namespace LoadTest
         public AppFactory(ITestOutputHelper outputHelper, LoadTestOptions loadTestOptions) : base(outputHelper,
             loadTestOptions)
         {
-            loadTestOptions.BaseAddress = new Uri("https://api.signal.pokket.app");
+            loadTestOptions.BaseColor = "#078889";
         }
 
         protected override string GetUrl(string path, string actionName, LoadTestOptions loadTestOptions)

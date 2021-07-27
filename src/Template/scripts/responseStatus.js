@@ -6,7 +6,7 @@
             height: 350,
             type: 'donut'
         },
-        colors: [data.ChartColor],
+        colors: [data.BaseColor],
         fill: {
             opacity: 1
         },

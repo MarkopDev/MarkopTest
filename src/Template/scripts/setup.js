@@ -1,4 +1,6 @@
 ﻿function setup() {
+    styling()
+    
     setInfo('os', data.OS)
     setInfo('api', data.ApiUrl)
     setInfo('cpu', data.CpuName)
@@ -17,6 +19,15 @@
     setupMemorySamples()
     setupResponseStatus()
     setupDistributionTime()
+}
+
+function styling() {
+    [...document.getElementsByClassName('mk-info-value')].forEach(el => {
+        el.style = `background: ${data.BaseColor};`
+    });
+    [...document.getElementsByClassName('mk-info-box-value')].forEach(el => {
+        el.style = `background: ${data.BaseColor};`
+    });
 }
 
 function setInfo(key, value) {

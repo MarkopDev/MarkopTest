@@ -9,7 +9,7 @@
             type: 'bar',
             height: 350,
         },
-        colors: [data.ChartColor],
+        colors: [data.BaseColor],
         dataLabels: {
             enabled: false,
         },

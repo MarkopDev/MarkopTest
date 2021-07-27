@@ -40,7 +40,6 @@ body {
 .mk-info-value {
     color: white;
     padding: 5px 10px;
-    background: #5e8fd3;
 }
 
 .mk-info-box {
@@ -63,7 +62,6 @@ body {
     color: white;
     padding: 5px 10px;
     text-align: center;
-    background: #5e8fd3;
     border-radius: 0 0 10px 10px;
 }
 

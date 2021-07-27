@@ -6,7 +6,7 @@
         public long RamSize { get; set; }
         public string ApiUrl { get; set; }
         public string CpuName { get; set; }
-        public string ChartColor { get; set; }
+        public string BaseColor { get; set; }
         public int SyncRequestCount { get; set; }
         public int AsyncRequestCount { get; set; }
         public long SyncMaxResponseTime { get; set; }

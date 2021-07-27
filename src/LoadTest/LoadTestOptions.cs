@@ -9,7 +9,7 @@ namespace MarkopTest.LoadTest
         public Uri BaseAddress { get; set; }
         public int SyncRequestCount { get; set; } = 50;
         public int AsyncRequestCount { get; set; } = 1000;
-        public string ChartColor { get; set; } = "#427bcb";
+        public string BaseColor { get; set; } = "#427bcb";
         public bool OpenResultAfterFinished { get; set; } = true;
     }
 }
