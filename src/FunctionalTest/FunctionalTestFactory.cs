@@ -15,7 +15,7 @@ namespace MarkopTest.FunctionalTest
         where TStartup : class
         where TTestOptions : FunctionalTestOptions
     {
-        private IHost _host;
+        private static IHost _host;
         private readonly TTestOptions _testOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
@@ -27,10 +27,11 @@ namespace MarkopTest.FunctionalTest
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial)
+            if (initial && _host == null)
             {
                 ConfigureWebHost();
-                Initializer(_host.Services);
+                if (_host != null)
+                    Initializer(_host.Services);
             }
         }
 
