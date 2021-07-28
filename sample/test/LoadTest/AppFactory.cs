@@ -21,7 +21,7 @@ namespace LoadTest
         {
         }
 
-        protected override string GetUrl(string path, string actionName, LoadTestOptions loadTestOptions)
+        protected override string GetUrl(string path, string actionName)
         {
             return APIs.V1 + path + actionName;
         }

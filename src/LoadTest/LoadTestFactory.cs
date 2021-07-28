@@ -29,13 +29,13 @@ namespace MarkopTest.LoadTest
     {
         private IHost _host;
         private readonly string _uri;
-        private readonly TTestOptions _testOptions;
+        protected readonly TTestOptions TestOptions;
         private readonly ITestOutputHelper _outputHelper;
 
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             _outputHelper = outputHelper;
-            _testOptions = testOptions ?? new TTestOptions();
+            TestOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
@@ -74,7 +74,7 @@ namespace MarkopTest.LoadTest
 
             #endregion
 
-            _uri = GetUrl(path, actionName, testOptions);
+            _uri = GetUrl(path, actionName);
         }
 
         private void ConfigureWebHost()
@@ -120,7 +120,7 @@ namespace MarkopTest.LoadTest
             var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
             var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
 
-            for (var i = 0; i < _testOptions.SyncRequestCount; i++)
+            for (var i = 0; i < TestOptions.SyncRequestCount; i++)
             {
                 var beforeRequestMemory = Process.GetCurrentProcess().PrivateMemorySize64;
 
@@ -161,7 +161,7 @@ namespace MarkopTest.LoadTest
                 }
             }
 
-            for (var i = 0; i < _testOptions.AsyncRequestCount; i++)
+            for (var i = 0; i < TestOptions.AsyncRequestCount; i++)
             {
                 var i1 = i;
                 tasks.Add(await Task.Run<Task>(async () =>
@@ -293,7 +293,7 @@ namespace MarkopTest.LoadTest
             {
                 ApiUrl = _uri,
                 SyncAvgResponseTime = syncAverage,
-                BaseColor = _testOptions.BaseColor,
+                BaseColor = TestOptions.BaseColor,
                 AsyncAvgResponseTime = asyncAverage,
                 SyncMemorySamples = syncMemoryTrend,
                 AsyncMemorySamples = asyncMemoryTrend,
@@ -303,8 +303,8 @@ namespace MarkopTest.LoadTest
                 SyncTimesIterations = syncTimesIterationArray,
                 AsyncTimeSummaryRange = asyncTimeSummaryRanges,
                 AsyncTimesIterations = asyncTimesIterationArray,
-                SyncRequestCount = _testOptions.SyncRequestCount,
-                AsyncRequestCount = _testOptions.AsyncRequestCount,
+                SyncRequestCount = TestOptions.SyncRequestCount,
+                AsyncRequestCount = TestOptions.AsyncRequestCount,
                 SyncTimesDistribution = syncTimesDistributionArray,
                 AsyncTimesDistribution = asyncTimesDistributionArray,
                 SyncMinResponseTime = syncRequestResponseTimes.Min(),
@@ -334,7 +334,7 @@ namespace MarkopTest.LoadTest
             await using var jsFile = File.Create("LoadTestResult/data.js");
             jsFile.Write(Encoding.UTF8.GetBytes($"var data = JSON.parse('{JsonSerializer.Serialize(model)}');"));
 
-            if (_testOptions.OpenResultAfterFinished)
+            if (TestOptions.OpenResultAfterFinished)
             {
                 Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
             }
@@ -342,20 +342,20 @@ namespace MarkopTest.LoadTest
 
         protected HttpClient GetClient()
         {
-            if (_testOptions.BaseAddress == null)
+            if (TestOptions.BaseAddress == null)
                 return _host.GetTestClient();
 
             var httpClientHandler = new HttpClientHandler
             {
-                Proxy = _testOptions.Proxy
+                Proxy = TestOptions.Proxy
             };
             return new HttpClient(httpClientHandler)
             {
-                BaseAddress = _testOptions.BaseAddress
+                BaseAddress = TestOptions.BaseAddress
             };
         }
 
-        protected abstract string GetUrl(string path, string actionName, LoadTestOptions fetchOptions);
+        protected abstract string GetUrl(string path, string actionName);
         protected abstract void Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
     }
