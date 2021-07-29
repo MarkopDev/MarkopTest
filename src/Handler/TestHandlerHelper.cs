@@ -13,14 +13,18 @@ namespace MarkopTest.Handler
     {
         private static TestHandler GetTestHandler()
         {
+            var functionalFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
+                frame?.GetMethod()?.DeclaringType?.Namespace ==
+                typeof(FunctionalTestFactory<>).Namespace);
+            
+            if (functionalFrame != null)
+                return null;
+
             var stackFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
-                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
-                                 typeof(FunctionalTestFactory<>).Namespace) ??
-                             new StackTrace().GetFrames().LastOrDefault(frame =>
-                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                                 frame?.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
                                  typeof(LoadTestFactory<>).Namespace) ??
                              new StackTrace().GetFrames().LastOrDefault(frame =>
-                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                                 frame?.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
                                  typeof(IntegrationTestFactory<>).Namespace);
 
 
