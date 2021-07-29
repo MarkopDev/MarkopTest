@@ -3,15 +3,26 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MarkopTest.FunctionalTest;
+using MarkopTest.IntegrationTest;
+using MarkopTest.LoadTest;
 
 namespace MarkopTest.Handler
 {
     internal class TestHandlerHelper
     {
-        private static TestHandler GetTestHandler(Type type)
+        private static TestHandler GetTestHandler()
         {
             var stackFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
-                frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace == type.Namespace);
+                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                                 typeof(FunctionalTestFactory<>).Namespace) ??
+                             new StackTrace().GetFrames().LastOrDefault(frame =>
+                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                                 typeof(LoadTestFactory<>).Namespace) ??
+                             new StackTrace().GetFrames().LastOrDefault(frame =>
+                                 frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                                 typeof(IntegrationTestFactory<>).Namespace);
+
 
             var methodBase = stackFrame?.GetMethod();
 
@@ -21,16 +32,16 @@ namespace MarkopTest.Handler
             return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
         }
 
-        internal static async Task BeforeTest(HttpClient httpClient, Type type)
+        internal static async Task BeforeTest(HttpClient httpClient)
         {
-            var handler = GetTestHandler(type);
+            var handler = GetTestHandler();
             if (handler != null)
                 await handler.Before(httpClient);
         }
 
-        internal static async Task AfterTest(HttpClient httpClient, Type type)
+        internal static async Task AfterTest(HttpClient httpClient)
         {
-            var handler = GetTestHandler(type);
+            var handler = GetTestHandler();
             if (handler != null)
                 await handler.After(httpClient);
         }

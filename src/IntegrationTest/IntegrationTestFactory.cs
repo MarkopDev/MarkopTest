@@ -111,11 +111,11 @@ namespace MarkopTest.IntegrationTest
         {
             var client = GetClient();
 
-            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.BeforeTest(client);
 
             var response = await client.PostAsync(Uri, content);
 
-            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.AfterTest(client);
 
             await PrintOutput(response);
 
@@ -141,11 +141,11 @@ namespace MarkopTest.IntegrationTest
                 }
             }
 
-            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.BeforeTest(client);
 
             var response = await client.GetAsync(uri);
 
-            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.AfterTest(client);
 
             await PrintOutput(response);
 
