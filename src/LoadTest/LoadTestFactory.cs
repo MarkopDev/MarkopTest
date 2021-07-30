@@ -40,12 +40,11 @@ namespace MarkopTest.LoadTest
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial)
-            {
+            if (initial && (_host == null || TestOptions.HostSeparation))
                 ConfigureWebHost();
 
+            if (initial && _host != null)
                 Initializer(_host.Services);
-            }
 
             #region AnalizeNamespace
 

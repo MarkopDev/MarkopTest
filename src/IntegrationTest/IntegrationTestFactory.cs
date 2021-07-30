@@ -24,7 +24,7 @@ namespace MarkopTest.IntegrationTest
     {
         private static IHost _host;
         public readonly string Uri;
-        private readonly TTestOptions _testOptions;
+        protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
 
@@ -33,12 +33,12 @@ namespace MarkopTest.IntegrationTest
         {
             OutputHelper = outputHelper;
             DefaultClient = defaultClient;
-            _testOptions = testOptions ?? new TTestOptions();
+            TestOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial && _host == null)
+            if (initial && (_host == null || TestOptions.HostSeparation))
                 ConfigureWebHost();
 
             if (initial && _host != null)
@@ -94,7 +94,7 @@ namespace MarkopTest.IntegrationTest
 
         protected virtual async Task PrintOutput(HttpResponseMessage response)
         {
-            if (_testOptions.LogResponse)
+            if (TestOptions.LogResponse)
                 if (response.Content.Headers.Any(h =>
                     h.Key == "Content-Type" && h.Value.Any(v => v.Contains("application/json"))))
                     OutputHelper.WriteLine(await response.GetContent());

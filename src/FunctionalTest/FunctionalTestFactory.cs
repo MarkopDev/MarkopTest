@@ -16,18 +16,18 @@ namespace MarkopTest.FunctionalTest
         where TTestOptions : FunctionalTestOptions, new()
     {
         private static IHost _host;
-        private readonly TTestOptions _testOptions;
+        protected readonly TTestOptions TestOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
         protected FunctionalTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             OutputHelper = outputHelper;
-            _testOptions = testOptions ?? new TTestOptions();
+            TestOptions = testOptions ?? new TTestOptions();
 
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial && _host == null)
+            if (initial && (_host == null || TestOptions.HostSeparation))
                 ConfigureWebHost();
 
             if (initial && _host != null)
