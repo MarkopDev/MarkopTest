@@ -12,7 +12,10 @@ namespace FunctionalTest
 {
     public class AppFactory : FunctionalTestFactory<Startup>
     {
-        public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper)
+        public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper, new FunctionalTestOptions
+        {
+            HostSeparation = true
+        })
         {
         }
 

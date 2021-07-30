@@ -165,7 +165,7 @@ namespace MarkopTest.IntegrationTest
 
         protected HttpClient GetClient()
         {
-            return DefaultClient ?? _host.GetTestClient();
+            return DefaultClient ?? Host.GetTestClient();
         }
 
         protected abstract string GetUrl(string path, string actionName);

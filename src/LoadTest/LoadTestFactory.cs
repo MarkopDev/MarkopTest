@@ -351,7 +351,7 @@ namespace MarkopTest.LoadTest
         protected HttpClient GetClient()
         {
             if (TestOptions.BaseAddress == null)
-                return _host.GetTestClient();
+                return Host.GetTestClient();
 
             var httpClientHandler = new HttpClientHandler
             {
