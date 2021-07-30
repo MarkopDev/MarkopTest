@@ -24,6 +24,7 @@ namespace MarkopTest.IntegrationTest
     {
         private static IHost _host;
         public readonly string Uri;
+        private IHost _seperatedHost;
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
@@ -38,11 +39,11 @@ namespace MarkopTest.IntegrationTest
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial && (_host == null || TestOptions.HostSeparation))
+            if (initial)
                 ConfigureWebHost();
 
-            if (initial && _host != null)
-                Initializer(_host.Services);
+            if (initial && Host != null)
+                Initializer(Host.Services);
 
             #region AnalizeNamespace
 
@@ -74,8 +75,13 @@ namespace MarkopTest.IntegrationTest
             Uri = GetUrl(path, actionName);
         }
 
+        private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
+
         private void ConfigureWebHost()
         {
+            if (!TestOptions.HostSeparation && _host != null)
+                return;
+            
             var hostBuilder = new HostBuilder()
                 .ConfigureWebHost(webHost =>
                 {
@@ -89,7 +95,10 @@ namespace MarkopTest.IntegrationTest
                     webHost.ConfigureTestServices(ConfigureTestServices);
                 });
 
-            _host = hostBuilder.Start();
+            if (TestOptions.HostSeparation)
+                _seperatedHost = hostBuilder.Start();
+            else
+                _host = hostBuilder.Start();
         }
 
         protected virtual async Task PrintOutput(HttpResponseMessage response)

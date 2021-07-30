@@ -16,6 +16,7 @@ namespace MarkopTest.FunctionalTest
         where TTestOptions : FunctionalTestOptions, new()
     {
         private static IHost _host;
+        private IHost _seperatedHost;
         protected readonly TTestOptions TestOptions;
         protected readonly ITestOutputHelper OutputHelper;
 
@@ -27,15 +28,20 @@ namespace MarkopTest.FunctionalTest
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
-            if (initial && (_host == null || TestOptions.HostSeparation))
+            if (initial)
                 ConfigureWebHost();
 
-            if (initial && _host != null)
-                Initializer(_host.Services);
+            if (initial && Host != null)
+                Initializer(Host.Services);
         }
+
+        private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
 
         private void ConfigureWebHost()
         {
+            if (!TestOptions.HostSeparation && _host != null)
+                return;
+
             var hostBuilder = new HostBuilder()
                 .ConfigureWebHost(webHost =>
                 {
@@ -49,12 +55,15 @@ namespace MarkopTest.FunctionalTest
                     webHost.ConfigureTestServices(ConfigureTestServices);
                 });
 
-            _host = hostBuilder.Start();
+            if (TestOptions.HostSeparation)
+                _seperatedHost = hostBuilder.Start();
+            else
+                _host = hostBuilder.Start();
         }
 
         protected HttpClient GetClient()
         {
-            return _host.GetTestClient();
+            return Host.GetTestClient();
         }
 
         protected abstract void Initializer(IServiceProvider hostServices);
