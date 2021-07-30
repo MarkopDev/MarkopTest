@@ -18,7 +18,7 @@ namespace FunctionalTest.Scenarios
         public async Task ManageNewsTest()
         {
             var userClient = await GetClient().User();
-            var ownerClient = await GetClient().User();
+            var ownerClient = await GetClient().Owner();
 
             var newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 
