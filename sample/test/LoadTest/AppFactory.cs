@@ -44,7 +44,7 @@ namespace LoadTest
                     options.UseNpgsql(services.BuildServiceProvider().GetService<IConfiguration>()
                         .GetConnectionString("DBConnectionTestPostgreSQL"));
                 else
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    options.UseInMemoryDatabase("InMemoryDbForTesting" + Guid.NewGuid());
             }, ServiceLifetime.Transient);
         }
     }

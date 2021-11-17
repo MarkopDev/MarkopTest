@@ -19,7 +19,7 @@ namespace IntegrationTest
     public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
     {
         public AppFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
-            : base(outputHelper, defaultClient)
+            : base(outputHelper, defaultClient, new IntegrationTestOptions {HostSeparation = true})
         {
         }
 
@@ -43,7 +43,7 @@ namespace IntegrationTest
 
             services.AddDbContextPool<DatabaseContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryDbForTesting");
+                options.UseInMemoryDatabase("InMemoryDbForTesting" + Guid.NewGuid());
             });
         }
 

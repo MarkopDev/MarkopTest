@@ -34,7 +34,7 @@ namespace FunctionalTest
 
             services.AddDbContextPool<DatabaseContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryDbForTesting");
+                options.UseInMemoryDatabase("InMemoryDbForTesting" + Guid.NewGuid());
             });
         }
     }
