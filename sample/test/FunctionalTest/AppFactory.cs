@@ -32,9 +32,11 @@ namespace FunctionalTest
             if (descriptor != null)
                 services.Remove(descriptor);
 
+            // Use this trick to have different database in host separation
+            var dbName = "InMemoryDbForTesting" + Guid.NewGuid();
             services.AddDbContextPool<DatabaseContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryDbForTesting" + Guid.NewGuid());
+                options.UseInMemoryDatabase(dbName);
             });
         }
     }

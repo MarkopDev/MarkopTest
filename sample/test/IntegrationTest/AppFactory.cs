@@ -43,7 +43,7 @@ namespace IntegrationTest
 
             services.AddDbContextPool<DatabaseContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryDbForTesting" + Guid.NewGuid());
+                options.UseInMemoryDatabase("InMemoryDbForTesting");
             });
         }
 
