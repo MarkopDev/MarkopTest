@@ -17,24 +17,25 @@
         <PackageVersion>1.4.12</PackageVersion>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hardware.Info" Version="1.1.1.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-        <PackageReference Include="xunit" Version="2.4.1" />
+        <PackageReference Include="Hardware.Info" Version="1.1.1.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
+        <PackageReference Include="xunit" Version="2.4.1"/>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.0"/>
+    </ItemGroup>
+    
     <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.7"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.16" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.16"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -75,7 +76,7 @@
             <PackagePath>build/MarkopTest.targets</PackagePath>
         </Content>
         <None Update="Template\Result.html">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 </Project>
