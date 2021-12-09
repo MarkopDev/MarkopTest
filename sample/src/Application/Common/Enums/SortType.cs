@@ -1,8 +1,7 @@
-﻿namespace Application.Common.Enums
+﻿namespace Application.Common.Enums;
+
+public enum SortType
 {
-    public enum SortType
-    {
-        Ascending,
-        Descending 
-    }
+    Ascending,
+    Descending 
 }

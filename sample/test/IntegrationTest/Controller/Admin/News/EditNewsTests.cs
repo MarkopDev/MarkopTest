@@ -7,40 +7,39 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.Admin.News
+namespace IntegrationTest.Controller.Admin.News;
+
+public class EditNewsTests : AppFactory
 {
-    public class EditNewsTests : AppFactory
+    public EditNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public EditNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
+    }
+
+    [Theory]
+    [OwnerHandler]
+    [InlineData(1,"Edited Title", "Edited Content", "Preview Edited", false)]
+    [InlineData(1, "Edited Title", null, "Preview Edited", false, ErrorCode.InvalidInput)]
+    [InlineData(1, "Edited Title", "Edited Content", null, false, ErrorCode.InvalidInput)]
+    [InlineData(1, null, "Edited Content", "Preview Edited", false, ErrorCode.InvalidInput)]
+    [InlineData(-1, "Edited Title", "Edited Content", "Preview Edited", false, ErrorCode.InvalidInput)]
+    public async Task<EditNewsViewModel> EditNews(int newsId, string title, string content, string preview, bool isHidden, ErrorCode? errorCode = null)
+    {
+        var data = new EditNewsCommand
         {
-        }
+            Title = title,
+            NewsId = newsId,
+            Content = content,
+            Preview = preview,
+            IsHidden = isHidden
+        };
 
-        [Theory]
-        [OwnerHandler]
-        [InlineData(1,"Edited Title", "Edited Content", "Preview Edited", false)]
-        [InlineData(1, "Edited Title", null, "Preview Edited", false, ErrorCode.InvalidInput)]
-        [InlineData(1, "Edited Title", "Edited Content", null, false, ErrorCode.InvalidInput)]
-        [InlineData(1, null, "Edited Content", "Preview Edited", false, ErrorCode.InvalidInput)]
-        [InlineData(-1, "Edited Title", "Edited Content", "Preview Edited", false, ErrorCode.InvalidInput)]
-        public async Task<EditNewsViewModel> EditNews(int newsId, string title, string content, string preview, bool isHidden, ErrorCode? errorCode = null)
+        var response = await PostJsonAsync(data, new FetchOptions
         {
-            var data = new EditNewsCommand
-            {
-                Title = title,
-                NewsId = newsId,
-                Content = content,
-                Preview = preview,
-                IsHidden = isHidden
-            };
+            ErrorCode = errorCode
+        });
 
-            var response = await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-
-            return response.IsSuccessStatusCode
-                ? await response.Content.ReadFromJsonAsync<EditNewsViewModel>()
-                : null;
-        }
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<EditNewsViewModel>()
+            : null;
     }
 }

@@ -8,59 +8,58 @@ using Application.Common.Exceptions;
 using Application.Common.Models;
 using Microsoft.AspNetCore.Http;
 
-namespace Infrastructure.MiddleWare
+namespace Infrastructure.MiddleWare;
+
+public class SystemExceptionMiddleWare
 {
-    public class SystemExceptionMiddleWare
+    private readonly RequestDelegate _next;
+
+    public SystemExceptionMiddleWare(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public SystemExceptionMiddleWare(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
+            await _next.Invoke(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (ServiceException e)
         {
-            try
+            context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
+            context.Response.ContentType = "application/json; charset=utf-8";
+            var newResponse = JsonSerializer.Serialize(new
             {
-                await _next.Invoke(context);
-            }
-            catch (ServiceException e)
+                e.Errors
+            }, new JsonSerializerOptions
             {
-                context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
-                context.Response.ContentType = "application/json; charset=utf-8";
-                var newResponse = JsonSerializer.Serialize(new
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            });
+            await context.Response.WriteAsync(newResponse);
+        }
+        catch (Exception)
+        {
+            Debugger.Break();
+            // loggerService.Error(e);
+            context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
+            context.Response.ContentType = "application/json; charset=utf-8";
+            var newResponse = JsonSerializer.Serialize(new
                 {
-                    e.Errors
-                }, new JsonSerializerOptions
+                    Errors = new[]
+                    {
+                        new Error
+                        {
+                            Code = ErrorCode.Unexpected,
+                            Message = "An unexpected exception occurred."
+                        }
+                    }
+                },
+                new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 });
-                await context.Response.WriteAsync(newResponse);
-            }
-            catch (Exception)
-            {
-                Debugger.Break();
-                // loggerService.Error(e);
-                context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
-                context.Response.ContentType = "application/json; charset=utf-8";
-                var newResponse = JsonSerializer.Serialize(new
-                    {
-                        Errors = new[]
-                        {
-                            new Error
-                            {
-                                Code = ErrorCode.Unexpected,
-                                Message = "An unexpected exception occurred."
-                            }
-                        }
-                    },
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    });
-                await context.Response.WriteAsync(newResponse);
-            }
+            await context.Response.WriteAsync(newResponse);
         }
     }
 }

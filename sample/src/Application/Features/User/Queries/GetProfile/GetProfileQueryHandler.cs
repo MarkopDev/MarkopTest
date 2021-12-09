@@ -8,32 +8,31 @@ using Application.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Features.User.Queries.GetProfile
+namespace Application.Features.User.Queries.GetProfile;
+
+public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, GetProfileViewModel>
 {
-    public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, GetProfileViewModel>
+    private IMapper Mapper { get; }
+    private IUnitOfWork UnitOfWork { get; }
+    private IHttpContextAccessor HttpContextAccessor { get; }
+    private UserManager<Domain.Entities.User> UserManager { get; }
+
+    public GetProfileQueryHandler(UserManager<Domain.Entities.User> userManager, IUnitOfWork unitOfWork,
+        IHttpContextAccessor httpContextAccessor, IMapper mapper)
     {
-        private IMapper Mapper { get; }
-        private IUnitOfWork UnitOfWork { get; }
-        private IHttpContextAccessor HttpContextAccessor { get; }
-        private UserManager<Domain.Entities.User> UserManager { get; }
+        Mapper = mapper;
+        UnitOfWork = unitOfWork;
+        UserManager = userManager;
+        HttpContextAccessor = httpContextAccessor;
+    }
 
-        public GetProfileQueryHandler(UserManager<Domain.Entities.User> userManager, IUnitOfWork unitOfWork,
-            IHttpContextAccessor httpContextAccessor, IMapper mapper)
+    public async Task<GetProfileViewModel> Handle(GetProfileQuery request, CancellationToken cancellationToken)
+    {
+        var user = HttpContextAccessor.GetUser();
+
+        return new GetProfileViewModel
         {
-            Mapper = mapper;
-            UnitOfWork = unitOfWork;
-            UserManager = userManager;
-            HttpContextAccessor = httpContextAccessor;
-        }
-
-        public async Task<GetProfileViewModel> Handle(GetProfileQuery request, CancellationToken cancellationToken)
-        {
-            var user = HttpContextAccessor.GetUser();
-
-            return new GetProfileViewModel
-            {
-                Profile = Mapper.Map<ProfileDto>(user)
-            };
-        }
+            Profile = Mapper.Map<ProfileDto>(user)
+        };
     }
 }

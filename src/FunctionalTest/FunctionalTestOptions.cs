@@ -1,7 +1,6 @@
-﻿namespace MarkopTest.FunctionalTest
+﻿namespace MarkopTest.FunctionalTest;
+
+public class FunctionalTestOptions
 {
-    public class FunctionalTestOptions
-    {
-        public bool HostSeparation { get; set; } = false;
-    }
+    public bool HostSeparation { get; set; } = false;
 }

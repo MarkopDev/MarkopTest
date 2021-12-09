@@ -1,9 +1,8 @@
-﻿namespace Application.Common.Enums
+﻿namespace Application.Common.Enums;
+
+public enum UserInfoType
 {
-    public enum UserInfoType
-    {
-        Email,
-        PhoneNumber,
-        UserId
-    }
+    Email,
+    PhoneNumber,
+    UserId
 }

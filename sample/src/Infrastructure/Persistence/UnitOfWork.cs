@@ -7,91 +7,90 @@ using Infrastructure.Repositories;
 using Application.Contracts.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Persistence
+namespace Infrastructure.Persistence;
+
+public class UnitOfWork : IUnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    #region Private Fields
+
+    private bool _disposed;
+    private DatabaseContext _databaseContext;
+    private Dictionary<string, dynamic> _repositories;
+    private readonly IServiceProvider _serviceProvider;
+
+    #endregion Private Fields
+
+    #region Constuctor/Dispose
+
+    public UnitOfWork(DatabaseContext databaseContext, IServiceProvider serviceProvider)
     {
-        #region Private Fields
+        _databaseContext = databaseContext;
+        _serviceProvider = serviceProvider;
+        _repositories = new Dictionary<string, dynamic>();
+    }
 
-        private bool _disposed;
-        private DatabaseContext _databaseContext;
-        private Dictionary<string, dynamic> _repositories;
-        private readonly IServiceProvider _serviceProvider;
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
 
-        #endregion Private Fields
-
-        #region Constuctor/Dispose
-
-        public UnitOfWork(DatabaseContext databaseContext, IServiceProvider serviceProvider)
+        if (_databaseContext != null)
         {
-            _databaseContext = databaseContext;
-            _serviceProvider = serviceProvider;
-            _repositories = new Dictionary<string, dynamic>();
+            _databaseContext.Dispose();
+            _databaseContext = null;
         }
 
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
+        _disposed = true;
+        GC.SuppressFinalize(this);
+    }
 
-            if (_databaseContext != null)
-            {
-                _databaseContext.Dispose();
-                _databaseContext = null;
-            }
+    #endregion Constuctor/Dispose
 
-            _disposed = true;
-            GC.SuppressFinalize(this);
-        }
+    public int SaveChanges()
+    {
+        return _databaseContext.SaveChanges();
+    }
 
-        #endregion Constuctor/Dispose
+    public Task<int> SaveChangesAsync()
+    {
+        return _databaseContext.SaveChangesAsync();
+    }
 
-        public int SaveChanges()
-        {
-            return _databaseContext.SaveChanges();
-        }
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return _databaseContext.SaveChangesAsync(cancellationToken);
+    }
 
-        public Task<int> SaveChangesAsync()
-        {
-            return _databaseContext.SaveChangesAsync();
-        }
+    public IRepository<TEntity> Repository<TEntity>() where TEntity : class, IEntityBase
+    {
+        if (_repositories == null)
+            _repositories = new Dictionary<string, object>();
 
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
-        {
-            return _databaseContext.SaveChangesAsync(cancellationToken);
-        }
+        var type = typeof(TEntity).Name;
 
-        public IRepository<TEntity> Repository<TEntity>() where TEntity : class, IEntityBase
-        {
-            if (_repositories == null)
-                _repositories = new Dictionary<string, object>();
+        if (_repositories.ContainsKey(type))
+            return (IRepository<TEntity>) _repositories[type];
 
-            var type = typeof(TEntity).Name;
+        _repositories.Add(type, new RepositoryBase<TEntity>(_databaseContext));
 
-            if (_repositories.ContainsKey(type))
-                return (IRepository<TEntity>) _repositories[type];
+        return _repositories[type];
+    }
 
-            _repositories.Add(type, new RepositoryBase<TEntity>(_databaseContext));
+    public TRepository Repository<TRepository, TEntity>() where TRepository : class, IRepository<TEntity>
+        where TEntity : class, IEntityBase
+    {
+        if (_repositories == null)
+            _repositories = new Dictionary<string, object>();
 
-            return _repositories[type];
-        }
+        var type = typeof(TEntity).Name;
 
-        public TRepository Repository<TRepository, TEntity>() where TRepository : class, IRepository<TEntity>
-            where TEntity : class, IEntityBase
-        {
-            if (_repositories == null)
-                _repositories = new Dictionary<string, object>();
+        if (_repositories.ContainsKey(type))
+            return (TRepository) _repositories[type];
 
-            var type = typeof(TEntity).Name;
-
-            if (_repositories.ContainsKey(type))
-                return (TRepository) _repositories[type];
-
-            var repository = _serviceProvider.GetService<TRepository>();
+        var repository = _serviceProvider.GetService<TRepository>();
             
-            _repositories.Add(type, repository);
+        _repositories.Add(type, repository);
 
-            return _repositories[type];
-        }
+        return _repositories[type];
     }
 }

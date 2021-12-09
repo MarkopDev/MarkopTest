@@ -1,9 +1,8 @@
-﻿namespace Application.DTOs.User
+﻿namespace Application.DTOs.User;
+
+public class ShortProfileDto
 {
-    public class ShortProfileDto
-    {
-        public string Id { get; set; }
-        public string LastName { get; set; }
-        public string FirstName { get; set; }
-    }
+    public string Id { get; set; }
+    public string LastName { get; set; }
+    public string FirstName { get; set; }
 }

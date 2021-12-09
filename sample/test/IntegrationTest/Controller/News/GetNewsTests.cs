@@ -7,33 +7,32 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.News
+namespace IntegrationTest.Controller.News;
+
+public class GetNewsTests : AppFactory
 {
-    public class GetNewsTests : AppFactory
+    public GetNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public GetNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
+    }
+
+    [Theory]
+    [UserHandler]
+    [InlineData(1)]
+    [InlineData(-1, ErrorCode.InvalidInput)]
+    public async Task<GetNewsViewModel> GetNews(int newsId, ErrorCode? errorCode = null)
+    {
+        var data = new GetNewsQuery
         {
-        }
+            NewsId = newsId
+        };
 
-        [Theory]
-        [UserHandler]
-        [InlineData(1)]
-        [InlineData(-1, ErrorCode.InvalidInput)]
-        public async Task<GetNewsViewModel> GetNews(int newsId, ErrorCode? errorCode = null)
+        var response = await PostJsonAsync(data, new FetchOptions
         {
-            var data = new GetNewsQuery
-            {
-                NewsId = newsId
-            };
+            ErrorCode = errorCode
+        });
 
-            var response = await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-
-            return response.IsSuccessStatusCode
-                ? await response.Content.ReadFromJsonAsync<GetNewsViewModel>()
-                : null;
-        }
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<GetNewsViewModel>()
+            : null;
     }
 }

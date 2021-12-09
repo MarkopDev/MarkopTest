@@ -1,9 +1,8 @@
 ﻿using MediatR;
 
-namespace Application.Features.News.Queries.GetNews
+namespace Application.Features.News.Queries.GetNews;
+
+public class GetNewsQuery : IRequest<GetNewsViewModel>
 {
-    public class GetNewsQuery : IRequest<GetNewsViewModel>
-    {
-        public int NewsId { get; set; }
-    }
+    public int NewsId { get; set; }
 }

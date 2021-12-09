@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
         <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>Markop Test</Title>
@@ -18,11 +17,15 @@
         <PackageVersion>1.4.12</PackageVersion>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hardware.Info" Version="1.0.1.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+        <PackageReference Include="Hardware.Info" Version="1.1.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
         <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
 

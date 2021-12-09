@@ -1,8 +1,7 @@
-﻿namespace MarkopTest.Models
+﻿namespace MarkopTest.Models;
+
+public class ResponseTimeSummaryResult
 {
-    public class ResponseTimeSummaryResult
-    {
-        public int Count { get; set; }
-        public string Range { get; set; }
-    }
+    public int Count { get; set; }
+    public string Range { get; set; }
 }

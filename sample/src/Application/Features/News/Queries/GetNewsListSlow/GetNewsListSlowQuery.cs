@@ -1,10 +1,9 @@
 ﻿using Application.Common.Models;
 using Application.DTOs.News;
 
-namespace Application.Features.News.Queries.GetNewsListSlow
+namespace Application.Features.News.Queries.GetNewsListSlow;
+
+public class GetNewsListSlowQuery : PaginationRequest<NewsListItemDto>
 {
-    public class GetNewsListSlowQuery : PaginationRequest<NewsListItemDto>
-    {
-        public string Search { get; set; }
-    }
+    public string Search { get; set; }
 }

@@ -5,33 +5,32 @@ using Application.Features.Account.Commands.SignIn;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.Account
+namespace IntegrationTest.Controller.Account;
+
+public class SignInTests : AppFactory
 {
-    public class SignInTests : AppFactory
+    public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public SignInTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
-        {
-        }
+    }
 
-        [Theory]
-        [InlineData("TestUser@Markop.com", LoginType.Email, "TestPassword")]
-        [InlineData(null, LoginType.Email, "TestPassword1", ErrorCode.InvalidInput)]
-        [InlineData("TestUser@Markop.com", LoginType.Email, null, ErrorCode.InvalidInput)]
-        [InlineData("TestTest@Markop.com", LoginType.Email, "TestPassword", ErrorCode.InvalidInput)]
-        [InlineData("TestUser@Markop.com", LoginType.Email, "TestPassword1", ErrorCode.InvalidInput)]
-        public async Task SignIn_ShouldWorkCorrectly(string login, LoginType loginType, string password, ErrorCode? errorCode = null)
+    [Theory]
+    [InlineData("TestUser@Markop.com", LoginType.Email, "TestPassword")]
+    [InlineData(null, LoginType.Email, "TestPassword1", ErrorCode.InvalidInput)]
+    [InlineData("TestUser@Markop.com", LoginType.Email, null, ErrorCode.InvalidInput)]
+    [InlineData("TestTest@Markop.com", LoginType.Email, "TestPassword", ErrorCode.InvalidInput)]
+    [InlineData("TestUser@Markop.com", LoginType.Email, "TestPassword1", ErrorCode.InvalidInput)]
+    public async Task SignIn_ShouldWorkCorrectly(string login, LoginType loginType, string password, ErrorCode? errorCode = null)
+    {
+        var data = new SignInCommand
         {
-            var data = new SignInCommand
-            {
-                Login = login,
-                Type = loginType,
-                Password = password
-            };
+            Login = login,
+            Type = loginType,
+            Password = password
+        };
 
-            await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-        }
+        await PostJsonAsync(data, new FetchOptions
+        {
+            ErrorCode = errorCode
+        });
     }
 }

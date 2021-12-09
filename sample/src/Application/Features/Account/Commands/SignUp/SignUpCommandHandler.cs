@@ -9,62 +9,61 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Features.Account.Commands.SignUp
+namespace Application.Features.Account.Commands.SignUp;
+
+public class SignUpCommandHandler : IRequestHandler<SignUpCommand, SignUpViewModel>
 {
-    public class SignUpCommandHandler : IRequestHandler<SignUpCommand, SignUpViewModel>
+    private IMapper Mapper { get; }
+    private IUnitOfWork UnitOfWork { get; }
+    private UserManager<Domain.Entities.User> UserManager { get; }
+    private SignInManager<Domain.Entities.User> SignInManager { get; }
+
+    public SignUpCommandHandler(UserManager<Domain.Entities.User> userManager, 
+        SignInManager<Domain.Entities.User> signInManager, IMapper mapper, IUnitOfWork unitOfWork)
     {
-        private IMapper Mapper { get; }
-        private IUnitOfWork UnitOfWork { get; }
-        private UserManager<Domain.Entities.User> UserManager { get; }
-        private SignInManager<Domain.Entities.User> SignInManager { get; }
+        Mapper = mapper;
+        UnitOfWork = unitOfWork;
+        UserManager = userManager;
+        SignInManager = signInManager;
+    }
 
-        public SignUpCommandHandler(UserManager<Domain.Entities.User> userManager, 
-            SignInManager<Domain.Entities.User> signInManager, IMapper mapper, IUnitOfWork unitOfWork)
+    public async Task<SignUpViewModel> Handle(SignUpCommand request, CancellationToken cancellationToken)
+    {
+        var duplicateUser = UnitOfWork.Repository<Domain.Entities.User>()
+            .Where(u => u.PhoneNumber == request.PhoneNumber).FirstOrDefault();
+        if (duplicateUser != null)
         {
-            Mapper = mapper;
-            UnitOfWork = unitOfWork;
-            UserManager = userManager;
-            SignInManager = signInManager;
-        }
-
-        public async Task<SignUpViewModel> Handle(SignUpCommand request, CancellationToken cancellationToken)
-        {
-            var duplicateUser = UnitOfWork.Repository<Domain.Entities.User>()
-                .Where(u => u.PhoneNumber == request.PhoneNumber).FirstOrDefault();
-            if (duplicateUser != null)
-            {
-                if (duplicateUser.PhoneNumberConfirmed)
-                    throw new ServiceException(new Error
-                    {
-                        Code = ErrorCode.Duplicate,
-                        Message = "Duplicate phone number."
-                    });
-                await UserManager.DeleteAsync(duplicateUser);
-            }
-
-            var user = new Domain.Entities.User
-            {
-                LastName = request.LastName,
-                FirstName = request.FirstName,
-                PhoneNumber = request.PhoneNumber,
-                UserName = request.PhoneNumber.Replace(" ", ""),
-            };
-
-            var result = await UserManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
+            if (duplicateUser.PhoneNumberConfirmed)
                 throw new ServiceException(new Error
                 {
-                    Code = ErrorCode.Unexpected,
-                    Message = "Unexpected occurred while sign up your account."
+                    Code = ErrorCode.Duplicate,
+                    Message = "Duplicate phone number."
                 });
-
-            await UserManager.AddToRoleAsync(user, "User");
-
-            return new SignUpViewModel
-            {
-                Profile = Mapper.Map<ProfileDto>(user)
-            };
+            await UserManager.DeleteAsync(duplicateUser);
         }
+
+        var user = new Domain.Entities.User
+        {
+            LastName = request.LastName,
+            FirstName = request.FirstName,
+            PhoneNumber = request.PhoneNumber,
+            UserName = request.PhoneNumber.Replace(" ", ""),
+        };
+
+        var result = await UserManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+            throw new ServiceException(new Error
+            {
+                Code = ErrorCode.Unexpected,
+                Message = "Unexpected occurred while sign up your account."
+            });
+
+        await UserManager.AddToRoleAsync(user, "User");
+
+        return new SignUpViewModel
+        {
+            Profile = Mapper.Map<ProfileDto>(user)
+        };
     }
 }

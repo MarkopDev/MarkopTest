@@ -14,54 +14,53 @@ using Xunit;
 using Xunit.Abstractions;
 using DatabaseInitializer = IntegrationTest.Persistence.DatabaseInitializer;
 
-namespace IntegrationTest
+namespace IntegrationTest;
+
+public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
 {
-    public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
+    public AppFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
+        : base(outputHelper, defaultClient, new IntegrationTestOptions {HostSeparation = true})
     {
-        public AppFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
-            : base(outputHelper, defaultClient, new IntegrationTestOptions {HostSeparation = true})
+    }
+
+    protected override string GetUrl(string path, string actionName)
+    {
+        return APIs.V1 + path + actionName;
+    }
+
+    protected override void Initializer(IServiceProvider hostServices)
+    {
+        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+    }
+
+    protected override void ConfigureTestServices(IServiceCollection services)
+    {
+        var descriptor = services.SingleOrDefault(d
+            => d.ServiceType == typeof(DbContextOptions<DatabaseContext>));
+
+        if (descriptor != null)
+            services.Remove(descriptor);
+
+        services.AddDbContextPool<DatabaseContext>(options =>
         {
-        }
+            options.UseInMemoryDatabase("InMemoryDbForTesting");
+        });
+    }
 
-        protected override string GetUrl(string path, string actionName)
-        {
-            return APIs.V1 + path + actionName;
-        }
+    protected override async Task<bool> ValidateResponse(HttpResponseMessage httpResponseMessage,
+        FetchOptions fetchOptions)
+    {
+        var responseHttpStatusCode = fetchOptions.HttpStatusCode;
+        if (fetchOptions.ErrorCode != null)
+            responseHttpStatusCode = HttpStatusCode.NotAcceptable;
+        if (fetchOptions.ErrorCode == ErrorCode.Unauthorized)
+            responseHttpStatusCode = HttpStatusCode.Unauthorized;
 
-        protected override void Initializer(IServiceProvider hostServices)
-        {
-            new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
-        }
+        Assert.Equal(responseHttpStatusCode, httpResponseMessage.StatusCode);
 
-        protected override void ConfigureTestServices(IServiceCollection services)
-        {
-            var descriptor = services.SingleOrDefault(d
-                => d.ServiceType == typeof(DbContextOptions<DatabaseContext>));
+        if (responseHttpStatusCode is HttpStatusCode.OK or HttpStatusCode.NotAcceptable)
+            return await httpResponseMessage.HasErrorCode(fetchOptions.ErrorCode);
 
-            if (descriptor != null)
-                services.Remove(descriptor);
-
-            services.AddDbContextPool<DatabaseContext>(options =>
-            {
-                options.UseInMemoryDatabase("InMemoryDbForTesting");
-            });
-        }
-
-        protected override async Task<bool> ValidateResponse(HttpResponseMessage httpResponseMessage,
-            FetchOptions fetchOptions)
-        {
-            var responseHttpStatusCode = fetchOptions.HttpStatusCode;
-            if (fetchOptions.ErrorCode != null)
-                responseHttpStatusCode = HttpStatusCode.NotAcceptable;
-            if (fetchOptions.ErrorCode == ErrorCode.Unauthorized)
-                responseHttpStatusCode = HttpStatusCode.Unauthorized;
-
-            Assert.Equal(responseHttpStatusCode, httpResponseMessage.StatusCode);
-
-            if (responseHttpStatusCode is HttpStatusCode.OK or HttpStatusCode.NotAcceptable)
-                return await httpResponseMessage.HasErrorCode(fetchOptions.ErrorCode);
-
-            return true;
-        }
+        return true;
     }
 }

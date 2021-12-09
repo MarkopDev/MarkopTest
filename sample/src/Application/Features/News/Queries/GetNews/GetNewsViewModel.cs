@@ -1,9 +1,8 @@
 ﻿using Application.DTOs.News;
 
-namespace Application.Features.News.Queries.GetNews
+namespace Application.Features.News.Queries.GetNews;
+
+public class GetNewsViewModel
 {
-    public class GetNewsViewModel
-    {
-        public NewsDto News { get; set; }
-    }
+    public NewsDto News { get; set; }
 }

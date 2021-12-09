@@ -6,35 +6,34 @@ using Application.Common.Exceptions;
 using Application.Common.Models;
 using MediatR;
 
-namespace Application.Common.Behaviours
-{
-    public class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    {
-        public UnhandledExceptionBehaviour()
-        {
-        }
+namespace Application.Common.Behaviours;
 
-        public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken,
-            RequestHandlerDelegate<TResponse> next)
+public class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    public UnhandledExceptionBehaviour()
+    {
+    }
+
+    public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken,
+        RequestHandlerDelegate<TResponse> next)
+    {
+        try
         {
-            try
+            return await next();
+        }
+        catch (ServiceException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // Debugger.Break();
+            // _loggerService.Error(ex);
+            throw new ServiceException(new Error
             {
-                return await next();
-            }
-            catch (ServiceException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                // Debugger.Break();
-                // _loggerService.Error(ex);
-                throw new ServiceException(new Error
-                {
-                    Code = ErrorCode.Unexpected,
-                    Message = "An unexpected exception occurred"
-                });
-            }
+                Code = ErrorCode.Unexpected,
+                Message = "An unexpected exception occurred"
+            });
         }
     }
 }

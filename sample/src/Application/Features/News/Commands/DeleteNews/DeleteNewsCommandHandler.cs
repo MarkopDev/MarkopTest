@@ -7,38 +7,37 @@ using Application.Contracts.Persistence;
 using AutoMapper;
 using MediatR;
 
-namespace Application.Features.News.Commands.DeleteNews
+namespace Application.Features.News.Commands.DeleteNews;
+
+public class DeleteNewsCommandHandler : IRequestHandler<DeleteNewsCommand>
 {
-    public class DeleteNewsCommandHandler : IRequestHandler<DeleteNewsCommand>
+    private IMapper Mapper { get; }
+    private IUnitOfWork UnitOfWork { get; }
+
+    public DeleteNewsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        private IMapper Mapper { get; }
-        private IUnitOfWork UnitOfWork { get; }
-
-        public DeleteNewsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            Mapper = mapper;
-            UnitOfWork = unitOfWork;
-        }
+        Mapper = mapper;
+        UnitOfWork = unitOfWork;
+    }
         
-        public async Task<Unit> Handle(DeleteNewsCommand request, CancellationToken cancellationToken)
-        {
-            var news = UnitOfWork.Repository<Domain.Entities.News>()
-                .Where(s => s.Id == request.NewsId)
-                .Include(s => s.Author)
-                .FirstOrDefault();
+    public async Task<Unit> Handle(DeleteNewsCommand request, CancellationToken cancellationToken)
+    {
+        var news = UnitOfWork.Repository<Domain.Entities.News>()
+            .Where(s => s.Id == request.NewsId)
+            .Include(s => s.Author)
+            .FirstOrDefault();
 
-            if (news == null)
-                throw new ServiceException(new Error
-                {
-                    Code = ErrorCode.NotFound,
-                    Message = "News not found."
-                });
+        if (news == null)
+            throw new ServiceException(new Error
+            {
+                Code = ErrorCode.NotFound,
+                Message = "News not found."
+            });
             
-            UnitOfWork.Repository<Domain.Entities.News>().Delete(news);
+        UnitOfWork.Repository<Domain.Entities.News>().Delete(news);
             
-            await UnitOfWork.SaveChangesAsync(cancellationToken);
+        await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }

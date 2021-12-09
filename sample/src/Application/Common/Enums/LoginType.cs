@@ -1,8 +1,7 @@
-﻿namespace Application.Common.Enums
+﻿namespace Application.Common.Enums;
+
+public enum LoginType : byte
 {
-    public enum LoginType : byte
-    {
-        Email,
-        PhoneNumber
-    }
+    Email,
+    PhoneNumber
 }

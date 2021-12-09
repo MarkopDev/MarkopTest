@@ -1,10 +1,9 @@
 ﻿using Application.Common.Enums;
 
-namespace Application.Common.Models
+namespace Application.Common.Models;
+
+public struct Error
 {
-    public struct Error
-    {
-        public string Message { get; set; }
-        public ErrorCode Code { get; set; }
-    }
+    public string Message { get; set; }
+    public ErrorCode Code { get; set; }
 }

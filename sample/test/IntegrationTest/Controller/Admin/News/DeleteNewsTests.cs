@@ -6,29 +6,28 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.Admin.News
+namespace IntegrationTest.Controller.Admin.News;
+
+public class DeleteNewsTests : AppFactory
 {
-    public class DeleteNewsTests : AppFactory
+    public DeleteNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public DeleteNewsTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
-        {
-        }
+    }
 
-        [Theory]
-        [OwnerHandler]
-        [InlineData(2)]
-        [InlineData(-1, ErrorCode.InvalidInput)]
-        public async Task DeleteNews(int newsId, ErrorCode? errorCode = null)
+    [Theory]
+    [OwnerHandler]
+    [InlineData(2)]
+    [InlineData(-1, ErrorCode.InvalidInput)]
+    public async Task DeleteNews(int newsId, ErrorCode? errorCode = null)
+    {
+        var data = new DeleteNewsCommand
         {
-            var data = new DeleteNewsCommand
-            {
-                NewsId = newsId
-            };
+            NewsId = newsId
+        };
 
-            await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-        }
+        await PostJsonAsync(data, new FetchOptions
+        {
+            ErrorCode = errorCode
+        });
     }
 }

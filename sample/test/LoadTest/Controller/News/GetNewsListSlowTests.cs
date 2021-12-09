@@ -4,26 +4,25 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LoadTest.Controller.News
+namespace LoadTest.Controller.News;
+
+public class GetNewsListSlowTests : AppFactory
 {
-    public class GetNewsListSlowTests : AppFactory
+    public GetNewsListSlowTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
-        public GetNewsListSlowTests(ITestOutputHelper outputHelper) : base(outputHelper)
-        {
-        }
+    }
 
-        [Theory]
-        [UserHandler]
-        [InlineData(1, 100)]
-        public async Task GetNewsListSlow(int pageNumber, int pageSize)
+    [Theory]
+    [UserHandler]
+    [InlineData(1, 100)]
+    public async Task GetNewsListSlow(int pageNumber, int pageSize)
+    {
+        var data = new GetNewsListSlowQuery
         {
-            var data = new GetNewsListSlowQuery
-            {
-                PageSize = pageSize,
-                PageNumber = pageNumber,
-            };
+            PageSize = pageSize,
+            PageNumber = pageNumber,
+        };
 
-            await PostJsonAsync(data);
-        }
+        await PostJsonAsync(data);
     }
 }

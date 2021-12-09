@@ -1,14 +1,13 @@
 ﻿using FluentValidation;
 
-namespace Application.Features.News.Commands.CreateNews
+namespace Application.Features.News.Commands.CreateNews;
+
+public class CreateNewsCommandValidator : AbstractValidator<CreateNewsCommand>
 {
-    public class CreateNewsCommandValidator : AbstractValidator<CreateNewsCommand>
+    public CreateNewsCommandValidator()
     {
-        public CreateNewsCommandValidator()
-        {
-            RuleFor(p => p.Title)
-                .NotEmpty()
-                .WithMessage("Title required.");
-        }
+        RuleFor(p => p.Title)
+            .NotEmpty()
+            .WithMessage("Title required.");
     }
 }

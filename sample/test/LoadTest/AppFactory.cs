@@ -10,42 +10,41 @@ using WebAPI;
 using Xunit.Abstractions;
 using DatabaseInitializer = LoadTest.Persistence.DatabaseInitializer;
 
-namespace LoadTest
+namespace LoadTest;
+
+public class AppFactory : LoadTestFactory<Startup>
 {
-    public class AppFactory : LoadTestFactory<Startup>
+    public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper)
     {
-        public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper)
+        TestOptions.BaseColor = "#078889";
+    }
+
+    protected override string GetUrl(string path, string actionName)
+    {
+        return APIs.V1 + path + actionName;
+    }
+
+    protected override void Initializer(IServiceProvider hostServices)
+    {
+        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+    }
+
+    protected override void ConfigureTestServices(IServiceCollection services)
+    {
+        var descriptor = services.SingleOrDefault(d
+            => d.ServiceType == typeof(DbContextOptions<DatabaseContext>));
+
+        if (descriptor != null)
+            services.Remove(descriptor);
+
+        services.AddDbContext<DatabaseContext>(options =>
         {
-            TestOptions.BaseColor = "#078889";
-        }
-
-        protected override string GetUrl(string path, string actionName)
-        {
-            return APIs.V1 + path + actionName;
-        }
-
-        protected override void Initializer(IServiceProvider hostServices)
-        {
-            new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
-        }
-
-        protected override void ConfigureTestServices(IServiceCollection services)
-        {
-            var descriptor = services.SingleOrDefault(d
-                => d.ServiceType == typeof(DbContextOptions<DatabaseContext>));
-
-            if (descriptor != null)
-                services.Remove(descriptor);
-
-            services.AddDbContext<DatabaseContext>(options =>
-            {
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ==
-                    Environments.Development)
-                    options.UseNpgsql(services.BuildServiceProvider().GetService<IConfiguration>()
-                        .GetConnectionString("DBConnectionTestPostgreSQL"));
-                else
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
-            }, ServiceLifetime.Transient);
-        }
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ==
+                Environments.Development)
+                options.UseNpgsql(services.BuildServiceProvider().GetService<IConfiguration>()
+                    .GetConnectionString("DBConnectionTestPostgreSQL"));
+            else
+                options.UseInMemoryDatabase("InMemoryDbForTesting");
+        }, ServiceLifetime.Transient);
     }
 }

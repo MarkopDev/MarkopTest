@@ -1,14 +1,13 @@
 ﻿using FluentValidation;
 
-namespace Application.Features.News.Commands.DeleteNews
+namespace Application.Features.News.Commands.DeleteNews;
+
+public class DeleteNewsCommandValidator : AbstractValidator<DeleteNewsCommand>
 {
-    public class DeleteNewsCommandValidator : AbstractValidator<DeleteNewsCommand>
+    public DeleteNewsCommandValidator()
     {
-        public DeleteNewsCommandValidator()
-        {
-            RuleFor(p => p.NewsId)
-                .GreaterThanOrEqualTo(1)
-                .WithMessage("News id required.");
-        }
+        RuleFor(p => p.NewsId)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("News id required.");
     }
 }

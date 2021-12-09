@@ -1,8 +1,7 @@
-﻿namespace MarkopTest.Models
+﻿namespace MarkopTest.Models;
+
+public class ResponseStatusResult
 {
-    public class ResponseStatusResult
-    {
-        public int Count { get; set; }
-        public string Status { get; set; }
-    }
+    public int Count { get; set; }
+    public string Status { get; set; }
 }

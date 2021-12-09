@@ -8,37 +8,36 @@ using Application.Features.News.Queries.GetNewsListFast;
 using Application.Features.News.Queries.GetNewsListSlow;
 using Microsoft.AspNetCore.Authorization;
 
-namespace WebAPI.Controllers
+namespace WebAPI.Controllers;
+
+[Authorize]
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]/[action]")]
+public class NewsController : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class NewsController : ControllerBase
+    public NewsController(IMediator mediator) : base(mediator)
     {
-        public NewsController(IMediator mediator) : base(mediator)
-        {
-        }
+    }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(PaginationViewModel<NewsListItemDto>), 200)]
-        public async Task<IActionResult> GetNewsListSlow(GetNewsListSlowQuery request)
-        {
-            return Ok(await Mediator.Send(request));
-        }
+    [HttpPost]
+    [ProducesResponseType(typeof(PaginationViewModel<NewsListItemDto>), 200)]
+    public async Task<IActionResult> GetNewsListSlow(GetNewsListSlowQuery request)
+    {
+        return Ok(await Mediator.Send(request));
+    }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(PaginationViewModel<NewsListItemDto>), 200)]
-        public async Task<IActionResult> GetNewsListFast(GetNewsListFastQuery request)
-        {
-            return Ok(await Mediator.Send(request));
-        }
+    [HttpPost]
+    [ProducesResponseType(typeof(PaginationViewModel<NewsListItemDto>), 200)]
+    public async Task<IActionResult> GetNewsListFast(GetNewsListFastQuery request)
+    {
+        return Ok(await Mediator.Send(request));
+    }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(GetNewsViewModel), 200)]
-        public async Task<IActionResult> GetNews(GetNewsQuery request)
-        {
-            return Ok(await Mediator.Send(request));
-        }
+    [HttpPost]
+    [ProducesResponseType(typeof(GetNewsViewModel), 200)]
+    public async Task<IActionResult> GetNews(GetNewsQuery request)
+    {
+        return Ok(await Mediator.Send(request));
     }
 }

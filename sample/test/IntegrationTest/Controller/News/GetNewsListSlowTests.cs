@@ -9,39 +9,38 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.News
+namespace IntegrationTest.Controller.News;
+
+public class GetNewsListSlowTests : AppFactory
 {
-    public class GetNewsListSlowTests : AppFactory
+    public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public GetNewsListSlowTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
+    }
+
+    [Theory]
+    [UserHandler]
+    [InlineData(1, 5, "")]
+    [InlineData(1, 5, "new")]
+    [InlineData(1, -5, "", ErrorCode.InvalidInput)]
+    [InlineData(-1, 5, "", ErrorCode.InvalidInput)]
+    [InlineData(1, 5000, "", ErrorCode.InvalidInput)]
+    public async Task<PaginationViewModel<NewsListItemDto>> GetNewsListSlow(int pageNumber, int pageSize, string search,
+        ErrorCode? errorCode = null)
+    {
+        var data = new GetNewsListSlowQuery
         {
-        }
+            Search = search,
+            PageSize = pageSize,
+            PageNumber = pageNumber,
+        };
 
-        [Theory]
-        [UserHandler]
-        [InlineData(1, 5, "")]
-        [InlineData(1, 5, "new")]
-        [InlineData(1, -5, "", ErrorCode.InvalidInput)]
-        [InlineData(-1, 5, "", ErrorCode.InvalidInput)]
-        [InlineData(1, 5000, "", ErrorCode.InvalidInput)]
-        public async Task<PaginationViewModel<NewsListItemDto>> GetNewsListSlow(int pageNumber, int pageSize, string search,
-            ErrorCode? errorCode = null)
+        var response = await PostJsonAsync(data, new FetchOptions
         {
-            var data = new GetNewsListSlowQuery
-            {
-                Search = search,
-                PageSize = pageSize,
-                PageNumber = pageNumber,
-            };
+            ErrorCode = errorCode
+        });
 
-            var response = await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-
-            return response.IsSuccessStatusCode
-                ? await response.Content.ReadFromJsonAsync<PaginationViewModel<NewsListItemDto>>()
-                : null;
-        }
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<PaginationViewModel<NewsListItemDto>>()
+            : null;
     }
 }

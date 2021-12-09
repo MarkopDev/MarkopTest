@@ -8,35 +8,34 @@ using IntegrationTest.Handlers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.User
+namespace IntegrationTest.Controller.User;
+
+public class GetProfileTests : AppFactory
 {
-    public class GetProfileTests : AppFactory
+    public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
-        public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
+    }
+
+    [Theory]
+    [UserHandler]
+    [InlineData(null)]
+    public async Task<ProfileDto> GetProfile(ErrorCode? errorCode = null)
+    {
+        var data = new GetProfileQuery();
+
+        var response = await PostJsonAsync(data, new FetchOptions
         {
-        }
+            ErrorCode = errorCode
+        });
 
-        [Theory]
-        [UserHandler]
-        [InlineData(null)]
-        public async Task<ProfileDto> GetProfile(ErrorCode? errorCode = null)
-        {
-            var data = new GetProfileQuery();
+        return response.IsSuccessStatusCode
+            ? (await response.Content.ReadFromJsonAsync<GetProfileViewModel>())?.Profile
+            : null;
+    }
 
-            var response = await PostJsonAsync(data, new FetchOptions
-            {
-                ErrorCode = errorCode
-            });
-
-            return response.IsSuccessStatusCode
-                ? (await response.Content.ReadFromJsonAsync<GetProfileViewModel>())?.Profile
-                : null;
-        }
-
-        [Fact]
-        public async Task GetProfile_UnauthorizedUser()
-        {
-            await GetProfile(ErrorCode.Unauthorized);
-        }
+    [Fact]
+    public async Task GetProfile_UnauthorizedUser()
+    {
+        await GetProfile(ErrorCode.Unauthorized);
     }
 }

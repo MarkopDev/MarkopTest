@@ -9,165 +9,164 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FunctionalTest.Persistence
+namespace FunctionalTest.Persistence;
+
+public class DatabaseInitializer
 {
-    public class DatabaseInitializer
+    private DatabaseContext Context { get; }
+    private IConfiguration Configuration { get; }
+    private UserManager<User> UserManager { get; }
+    private RoleManager<IdentityRole> RoleManager { get; }
+
+    public DatabaseInitializer(IServiceProvider scopeServiceProvider)
     {
-        private DatabaseContext Context { get; }
-        private IConfiguration Configuration { get; }
-        private UserManager<User> UserManager { get; }
-        private RoleManager<IdentityRole> RoleManager { get; }
+        Context = scopeServiceProvider.GetService<DatabaseContext>();
+        Configuration = scopeServiceProvider.GetService<IConfiguration>();
+        UserManager = scopeServiceProvider.GetService<UserManager<User>>();
+        RoleManager = scopeServiceProvider.GetService<RoleManager<IdentityRole>>();
+    }
 
-        public DatabaseInitializer(IServiceProvider scopeServiceProvider)
+    public async Task Initialize()
+    {
+        try
         {
-            Context = scopeServiceProvider.GetService<DatabaseContext>();
-            Configuration = scopeServiceProvider.GetService<IConfiguration>();
-            UserManager = scopeServiceProvider.GetService<UserManager<User>>();
-            RoleManager = scopeServiceProvider.GetService<RoleManager<IdentityRole>>();
+            if (await Context.Database.EnsureCreatedAsync())
+                await Initializer();
+            else
+                while (!Context.InitializeHistories.Any(history => history.Version == "V1"))
+                    Thread.Sleep(500);
         }
-
-        public async Task Initialize()
+        catch (Exception)
         {
-            try
-            {
-                if (await Context.Database.EnsureCreatedAsync())
-                    await Initializer();
-                else
-                    while (!Context.InitializeHistories.Any(history => history.Version == "V1"))
-                        Thread.Sleep(500);
-            }
-            catch (Exception)
-            {
-                Debugger.Break();
-                // LoggerService.Error(e);
-            }
+            Debugger.Break();
+            // LoggerService.Error(e);
         }
+    }
 
-        private async Task Initializer()
+    private async Task Initializer()
+    {
+        const string version = "V1";
+
+        if (Context.InitializeHistories.Any(history => history.Version == version))
+            return;
+
+        await RoleInitializer();
+        await UserInitializer();
+        await NewsInitializer();
+
+        await Context.InitializeHistories.AddAsync(new InitializeHistory
         {
-            const string version = "V1";
+            Version = version
+        });
 
-            if (Context.InitializeHistories.Any(history => history.Version == version))
-                return;
+        await Context.SaveChangesAsync();
+    }
 
-            await RoleInitializer();
-            await UserInitializer();
-            await NewsInitializer();
+    private async Task RoleInitializer()
+    {
+        await RoleManager.CreateAsync(new IdentityRole {Name = "Owner"});
+        await RoleManager.CreateAsync(new IdentityRole {Name = "Admin"});
+        await RoleManager.CreateAsync(new IdentityRole {Name = "User"});
+    }
 
-            await Context.InitializeHistories.AddAsync(new InitializeHistory
-            {
-                Version = version
-            });
-
-            await Context.SaveChangesAsync();
-        }
-
-        private async Task RoleInitializer()
+    private async Task UserInitializer()
+    {
+        var owner = new User
         {
-            await RoleManager.CreateAsync(new IdentityRole {Name = "Owner"});
-            await RoleManager.CreateAsync(new IdentityRole {Name = "Admin"});
-            await RoleManager.CreateAsync(new IdentityRole {Name = "User"});
-        }
+            Id = "OwnerUser",
+            UserName = "OwnerUser",
+            IsEnable = true,
+            LastName = "Owner",
+            FirstName = "Owner",
+            PhoneNumberConfirmed = true,
+            PhoneNumber = "0098 12345679",
+            Email = "TestOwner@Markop.com",
+        };
+        await UserManager.CreateAsync(owner, "OwnerPassword");
+        await UserManager.AddToRoleAsync(owner, "Owner");
+        var ownerToken1 = await UserManager.GenerateEmailConfirmationTokenAsync(owner);
+        await UserManager.ConfirmEmailAsync(owner, ownerToken1);
 
-        private async Task UserInitializer()
+        var userTest1 = new User
         {
-            var owner = new User
-            {
-                Id = "OwnerUser",
-                UserName = "OwnerUser",
-                IsEnable = true,
-                LastName = "Owner",
-                FirstName = "Owner",
-                PhoneNumberConfirmed = true,
-                PhoneNumber = "0098 12345679",
-                Email = "TestOwner@Markop.com",
-            };
-            await UserManager.CreateAsync(owner, "OwnerPassword");
-            await UserManager.AddToRoleAsync(owner, "Owner");
-            var ownerToken1 = await UserManager.GenerateEmailConfirmationTokenAsync(owner);
-            await UserManager.ConfirmEmailAsync(owner, ownerToken1);
+            Id = "user1",
+            UserName = "user1",
+            IsEnable = true,
+            LastName = "Test",
+            FirstName = "User1",
+            PhoneNumberConfirmed = true,
+            PhoneNumber = "0098 12345680",
+            Email = "TestUser@Markop.com",
+        };
+        await UserManager.CreateAsync(userTest1, "TestPassword");
+        await UserManager.AddToRoleAsync(userTest1, "User");
+        var userToken1 = await UserManager.GenerateEmailConfirmationTokenAsync(userTest1);
+        await UserManager.ConfirmEmailAsync(userTest1, userToken1);
 
-            var userTest1 = new User
-            {
-                Id = "user1",
-                UserName = "user1",
-                IsEnable = true,
-                LastName = "Test",
-                FirstName = "User1",
-                PhoneNumberConfirmed = true,
-                PhoneNumber = "0098 12345680",
-                Email = "TestUser@Markop.com",
-            };
-            await UserManager.CreateAsync(userTest1, "TestPassword");
-            await UserManager.AddToRoleAsync(userTest1, "User");
-            var userToken1 = await UserManager.GenerateEmailConfirmationTokenAsync(userTest1);
-            await UserManager.ConfirmEmailAsync(userTest1, userToken1);
-
-            var userTest2 = new User
-            {
-                Id = "user2",
-                UserName = "user2",
-                IsEnable = true,
-                LastName = "Test",
-                FirstName = "User2",
-                PhoneNumberConfirmed = true,
-                PhoneNumber = "0098 12345681",
-                Email = "TestUser2@Markop.com",
-            };
-            await UserManager.CreateAsync(userTest2, "TestPassword");
-            await UserManager.AddToRoleAsync(userTest2, "User");
-            var userToken2 = await UserManager.GenerateEmailConfirmationTokenAsync(userTest2);
-            await UserManager.ConfirmEmailAsync(userTest1, userToken2);
-
-            var userTest3 = new User
-            {
-                Id = "user3",
-                UserName = "user3",
-                IsEnable = true,
-                LastName = "Test",
-                FirstName = "User3",
-                PhoneNumberConfirmed = true,
-                PhoneNumber = "0098 12345682",
-                Email = "TestUser4@Markop.com",
-            };
-            await UserManager.CreateAsync(userTest3, "TestPassword");
-            await UserManager.AddToRoleAsync(userTest3, "User");
-
-            var userTest4 = new User
-            {
-                Id = "user4",
-                UserName = "user4",
-                IsEnable = true,
-                LastName = "Test",
-                FirstName = "User4",
-                PhoneNumberConfirmed = true,
-                PhoneNumber = "0098 12346798",
-                Email = "UnconfirmedEmail@Markop.com",
-            };
-            await UserManager.CreateAsync(userTest4, "TestPassword");
-            await UserManager.AddToRoleAsync(userTest4, "User");
-        }
-
-        private async Task NewsInitializer()
+        var userTest2 = new User
         {
-            Context.Newses.Add(new News
-            {
-                Title = "Title",
-                IsHidden = false,
-                Content = "Test Content",
-                Preview = "Preview Content",
-                AuthorId = Context.Users.First().Id
-            });
-            Context.Newses.Add(new News
-            {
-                Title = "Title",
-                IsHidden = false,
-                Content = "New Test Content",
-                Preview = "New Preview Content",
-                AuthorId = Context.Users.First().Id
-            });
+            Id = "user2",
+            UserName = "user2",
+            IsEnable = true,
+            LastName = "Test",
+            FirstName = "User2",
+            PhoneNumberConfirmed = true,
+            PhoneNumber = "0098 12345681",
+            Email = "TestUser2@Markop.com",
+        };
+        await UserManager.CreateAsync(userTest2, "TestPassword");
+        await UserManager.AddToRoleAsync(userTest2, "User");
+        var userToken2 = await UserManager.GenerateEmailConfirmationTokenAsync(userTest2);
+        await UserManager.ConfirmEmailAsync(userTest1, userToken2);
 
-            await Context.SaveChangesAsync();
-        }
+        var userTest3 = new User
+        {
+            Id = "user3",
+            UserName = "user3",
+            IsEnable = true,
+            LastName = "Test",
+            FirstName = "User3",
+            PhoneNumberConfirmed = true,
+            PhoneNumber = "0098 12345682",
+            Email = "TestUser4@Markop.com",
+        };
+        await UserManager.CreateAsync(userTest3, "TestPassword");
+        await UserManager.AddToRoleAsync(userTest3, "User");
+
+        var userTest4 = new User
+        {
+            Id = "user4",
+            UserName = "user4",
+            IsEnable = true,
+            LastName = "Test",
+            FirstName = "User4",
+            PhoneNumberConfirmed = true,
+            PhoneNumber = "0098 12346798",
+            Email = "UnconfirmedEmail@Markop.com",
+        };
+        await UserManager.CreateAsync(userTest4, "TestPassword");
+        await UserManager.AddToRoleAsync(userTest4, "User");
+    }
+
+    private async Task NewsInitializer()
+    {
+        Context.Newses.Add(new News
+        {
+            Title = "Title",
+            IsHidden = false,
+            Content = "Test Content",
+            Preview = "Preview Content",
+            AuthorId = Context.Users.First().Id
+        });
+        Context.Newses.Add(new News
+        {
+            Title = "Title",
+            IsHidden = false,
+            Content = "New Test Content",
+            Preview = "New Preview Content",
+            AuthorId = Context.Users.First().Id
+        });
+
+        await Context.SaveChangesAsync();
     }
 }

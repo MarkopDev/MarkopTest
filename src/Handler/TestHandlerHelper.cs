@@ -5,40 +5,39 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using MarkopTest.FunctionalTest;
 
-namespace MarkopTest.Handler
+namespace MarkopTest.Handler;
+
+internal class TestHandlerHelper
 {
-    internal class TestHandlerHelper
+    private static TestHandler GetTestHandler(Type type)
     {
-        private static TestHandler GetTestHandler(Type type)
-        {
-            if (new StackTrace().GetFrames().Any(frame =>
+        if (new StackTrace().GetFrames().Any(frame =>
                 frame.GetMethod()?.DeclaringType?.DeclaringType?.BaseType?.BaseType?.Namespace ==
                 typeof(FunctionalTestFactory<>).Namespace))
-                return null;
+            return null;
 
-            var stackFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
-                frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace == type.Namespace);
+        var stackFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
+            frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace == type.Namespace);
 
-            var methodBase = stackFrame?.GetMethod();
+        var methodBase = stackFrame?.GetMethod();
 
-            if (methodBase == null)
-                return null;
+        if (methodBase == null)
+            return null;
 
-            return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
-        }
+        return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
+    }
 
-        internal static async Task BeforeTest(HttpClient httpClient, Type type)
-        {
-            var handler = GetTestHandler(type);
-            if (handler != null)
-                await handler.Before(httpClient);
-        }
+    internal static async Task BeforeTest(HttpClient httpClient, Type type)
+    {
+        var handler = GetTestHandler(type);
+        if (handler != null)
+            await handler.Before(httpClient);
+    }
 
-        internal static async Task AfterTest(HttpClient httpClient, Type type)
-        {
-            var handler = GetTestHandler(type);
-            if (handler != null)
-                await handler.After(httpClient);
-        }
+    internal static async Task AfterTest(HttpClient httpClient, Type type)
+    {
+        var handler = GetTestHandler(type);
+        if (handler != null)
+            await handler.After(httpClient);
     }
 }

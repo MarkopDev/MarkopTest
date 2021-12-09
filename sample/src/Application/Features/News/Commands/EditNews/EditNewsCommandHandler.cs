@@ -8,44 +8,43 @@ using Application.DTOs.News;
 using AutoMapper;
 using MediatR;
 
-namespace Application.Features.News.Commands.EditNews
+namespace Application.Features.News.Commands.EditNews;
+
+public class EditNewsCommandHandler : IRequestHandler<EditNewsCommand, EditNewsViewModel>
 {
-    public class EditNewsCommandHandler : IRequestHandler<EditNewsCommand, EditNewsViewModel>
+    private IMapper Mapper { get; }
+    private IUnitOfWork UnitOfWork { get; }
+
+    public EditNewsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        private IMapper Mapper { get; }
-        private IUnitOfWork UnitOfWork { get; }
-
-        public EditNewsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        {
-            Mapper = mapper;
-            UnitOfWork = unitOfWork;
-        }
+        Mapper = mapper;
+        UnitOfWork = unitOfWork;
+    }
         
-        public async Task<EditNewsViewModel> Handle(EditNewsCommand request, CancellationToken cancellationToken)
-        {
-            var news = UnitOfWork.Repository<Domain.Entities.News>()
-                .Where(s => s.Id == request.NewsId)
-                .Include(s => s.Author)
-                .FirstOrDefault();
+    public async Task<EditNewsViewModel> Handle(EditNewsCommand request, CancellationToken cancellationToken)
+    {
+        var news = UnitOfWork.Repository<Domain.Entities.News>()
+            .Where(s => s.Id == request.NewsId)
+            .Include(s => s.Author)
+            .FirstOrDefault();
 
-            if (news == null)
-                throw new ServiceException(new Error
-                {
-                    Code = ErrorCode.NotFound,
-                    Message = "News not found."
-                });
-
-            news.Title = request.Title;
-            news.Content = request.Content;
-            news.Preview = request.Preview;
-            news.IsHidden = request.IsHidden;
-
-            await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            return new EditNewsViewModel
+        if (news == null)
+            throw new ServiceException(new Error
             {
-                News = Mapper.Map<NewsDto>(news)
-            };
-        }
+                Code = ErrorCode.NotFound,
+                Message = "News not found."
+            });
+
+        news.Title = request.Title;
+        news.Content = request.Content;
+        news.Preview = request.Preview;
+        news.IsHidden = request.IsHidden;
+
+        await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new EditNewsViewModel
+        {
+            News = Mapper.Map<NewsDto>(news)
+        };
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System.Net;
 
-namespace MarkopTest.Models
+namespace MarkopTest.Models;
+
+public class RequestInfo
 {
-    public class RequestInfo
-    {
-        public long ResponseTime { get; set; }
-        public HttpStatusCode ResponseStatus { get; set; }
-    }
+    public long ResponseTime { get; set; }
+    public HttpStatusCode ResponseStatus { get; set; }
 }

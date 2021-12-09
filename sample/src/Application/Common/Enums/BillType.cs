@@ -1,9 +1,8 @@
-﻿namespace Application.Common.Enums
+﻿namespace Application.Common.Enums;
+
+public enum BillType
 {
-    public enum BillType
-    {
-        All,
-        Earning,
-        Payment
-    }
+    All,
+    Earning,
+    Payment
 }
