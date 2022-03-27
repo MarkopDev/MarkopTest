@@ -15,8 +15,12 @@ namespace MarkopTest.UnitTest
     {
         private static IHost _host;
         private IHost _seperatedHost;
+        // for passing the parameters in tests
+        private readonly IServiceProvider _serviceProvider;
+        
         protected readonly TTestOptions TestOptions;
         protected readonly ITestOutputHelper OutputHelper;
+        protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
 
         protected UnitTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
@@ -30,7 +34,10 @@ namespace MarkopTest.UnitTest
                 ConfigureWebHost();
 
             if (initial && Host != null)
+            {
                 Initializer(Host.Services);
+                _serviceProvider = Host.Services;
+            }
         }
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;

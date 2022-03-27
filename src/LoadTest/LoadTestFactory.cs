@@ -28,10 +28,14 @@ namespace MarkopTest.LoadTest
         where TTestOptions : LoadTestOptions, new()
     {
         private static IHost _host;
-        public readonly string Uri;
         private IHost _seperatedHost;
+        // for passing the parameters in tests
+        private readonly IServiceProvider _serviceProvider;
+        
+        public readonly string Uri;
         protected readonly TTestOptions TestOptions;
         private readonly ITestOutputHelper _outputHelper;
+        protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
 
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
@@ -45,7 +49,10 @@ namespace MarkopTest.LoadTest
                 ConfigureWebHost();
 
             if (initial && Host != null)
+            {
                 Initializer(Host.Services);
+                _serviceProvider = Host.Services;
+            }
 
             #region AnalizeNamespace
 

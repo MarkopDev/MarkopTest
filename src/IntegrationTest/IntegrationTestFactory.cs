@@ -23,11 +23,17 @@ namespace MarkopTest.IntegrationTest
         where TTestOptions : IntegrationTestOptions, new()
     {
         private static IHost _host;
-        public readonly string Uri;
         private IHost _seperatedHost;
+        // for passing the parameters in tests
+        private readonly IServiceProvider _serviceProvider;
+
+        public readonly string Uri;
+        
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
+        protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
+
 
         protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient,
             TTestOptions testOptions = null)
@@ -43,7 +49,11 @@ namespace MarkopTest.IntegrationTest
                 ConfigureWebHost();
 
             if (initial && Host != null)
+            {
                 Initializer(Host.Services);
+                _serviceProvider = Host.Services;
+            }
+
 
             #region AnalizeNamespace
 
@@ -81,7 +91,7 @@ namespace MarkopTest.IntegrationTest
         {
             if (!TestOptions.HostSeparation && _host != null)
                 return;
-            
+
             var hostBuilder = new HostBuilder()
                 .ConfigureWebHost(webHost =>
                 {

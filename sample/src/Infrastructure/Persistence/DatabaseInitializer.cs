@@ -3,6 +3,7 @@ using System.Linq;
 using Domain.Entities;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Application.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,9 @@ public class DatabaseInitializer
         catch (Exception)
         {
             // LoggerService.Error(e);
+            if (GeneralUtilities.IsTestRunning)
+                throw;
+            
             Debugger.Break();
         }
     }

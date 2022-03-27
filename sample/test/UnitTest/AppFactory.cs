@@ -12,8 +12,8 @@ namespace UnitTest;
 
 public class AppFactory : UnitTestFactory<Startup>
 {
-    public AppFactory(ITestOutputHelper outputHelper)
-        : base(outputHelper, new UnitTestOptions {HostSeparation = true})
+    public AppFactory(ITestOutputHelper outputHelper, UnitTestOptions testOptions = null)
+        : base(outputHelper, testOptions ?? new UnitTestOptions {HostSeparation = true})
     {
     }
 
