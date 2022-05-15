@@ -11,9 +11,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using HttpMethod = MarkopTest.Enums.HttpMethod;
 
 namespace MarkopTest.IntegrationTest
 {
@@ -23,12 +25,14 @@ namespace MarkopTest.IntegrationTest
         where TTestOptions : IntegrationTestOptions, new()
     {
         private static IHost _host;
+
         private IHost _seperatedHost;
+
         // for passing the parameters in tests
         private readonly IServiceProvider _serviceProvider;
 
         public readonly string Uri;
-        
+
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
@@ -122,17 +126,62 @@ namespace MarkopTest.IntegrationTest
         protected async Task<HttpResponseMessage> PostJsonAsync(dynamic data,
             TFetchOptions fetchOptions = null)
         {
-            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-            return await PostAsync(content, fetchOptions);
+            return await RequestJsonAsync(data, HttpMethod.Post, fetchOptions);
+        }
+        
+        protected async Task<HttpResponseMessage> PostAsync(HttpContent content,
+            TFetchOptions fetchOptions = null)
+        {
+            return await RequestAsync(content, HttpMethod.Post, fetchOptions);
+        }
+        
+        protected async Task<HttpResponseMessage> PutJsonAsync(dynamic data,
+            TFetchOptions fetchOptions = null)
+        {
+            return await RequestJsonAsync(data, HttpMethod.Put, fetchOptions);
+        }
+        
+        protected async Task<HttpResponseMessage> PutAsync(HttpContent content,
+            TFetchOptions fetchOptions = null)
+        {
+            return await RequestAsync(content, HttpMethod.Put, fetchOptions);
+        }
+        
+        protected async Task<HttpResponseMessage> PatchJsonAsync(dynamic data,
+            TFetchOptions fetchOptions = null)
+        {
+            return await RequestJsonAsync(data, HttpMethod.Patch, fetchOptions);
+        }
+        
+        protected async Task<HttpResponseMessage> PatchAsync(HttpContent content,
+            TFetchOptions fetchOptions = null)
+        {
+            return await RequestAsync(content, HttpMethod.Patch, fetchOptions);
         }
 
-        protected async Task<HttpResponseMessage> PostAsync(HttpContent content, TFetchOptions fetchOptions = null)
+        private async Task<HttpResponseMessage> RequestJsonAsync(dynamic data, HttpMethod method,
+            TFetchOptions fetchOptions = null)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+
+            return await RequestAsync(content, method, fetchOptions);
+        }
+
+        private async Task<HttpResponseMessage> RequestAsync(HttpContent content, HttpMethod method,
+            TFetchOptions fetchOptions)
         {
             var client = GetClient();
 
             await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
 
-            var response = await client.PostAsync(Uri, content);
+
+            var response = method switch
+            {
+                HttpMethod.Post => await client.PostAsync(Uri, content),
+                HttpMethod.Put => await client.PutAsync(Uri, content),
+                HttpMethod.Patch => await client.PatchAsync(Uri, content),
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+            };
 
             await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
 
@@ -156,7 +205,7 @@ namespace MarkopTest.IntegrationTest
                 if (value != null && p.Name != null && p.Name.Length >= 1)
                 {
                     uri += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
-                           (string) value;
+                           (string)value;
                 }
             }
 

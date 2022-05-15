@@ -23,14 +23,14 @@ public class SignOutTests : AppFactory
     {
         var data = new SignOutCommand();
 
-        var response = await PostJsonAsync(data, new FetchOptions
+        var response = await PatchJsonAsync(data, new FetchOptions
         {
             ErrorCode = errorCode
         });
             
         GetClient().DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie").ToArray()[0]);
 
-        await PostJsonAsync(data, new FetchOptions
+        await PatchJsonAsync(data, new FetchOptions
         {
             ErrorCode = null,
             HttpStatusCode = HttpStatusCode.Unauthorized
