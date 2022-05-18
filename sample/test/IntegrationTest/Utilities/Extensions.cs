@@ -61,7 +61,7 @@ public static class Extensions
             Password = "TestPassword"
         };
 
-        var response = await client.PostAsync("api/v1.0/Account/SignIn", data); // TODO
+        var response = await client.PostAsync("api/v1.0/Account/SignIn", data);
 
         foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
             client.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -78,7 +78,7 @@ public static class Extensions
             Password = "OwnerPassword"
         };
 
-        var response = await client.PostAsync("api/v1.0/Account/SignIn", data); // TODO
+        var response = await client.PostAsync("api/v1.0/Account/SignIn", data);
 
         foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
             client.DefaultRequestHeaders.Add("Cookie", cookie);

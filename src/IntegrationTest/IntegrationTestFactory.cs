@@ -217,11 +217,15 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        protected async Task<HttpResponseMessage> GetAsync(dynamic data, TFetchOptions fetchOptions = null)
+        protected HttpResponseMessage Get(dynamic data, TFetchOptions fetchOptions = null)
+        {
+            var url = GetUrl();
+            return GetAsync(url, data, fetchOptions).Result;
+        }
+
+        private async Task<HttpResponseMessage> GetAsync(string url, dynamic data, TFetchOptions fetchOptions = null)
         {
             var client = GetClient();
-
-            var uri = ""; // TODO
 
             var properties = data.GetType().GetProperties();
             foreach (var p in properties)
@@ -229,14 +233,14 @@ namespace MarkopTest.IntegrationTest
                 var value = p.GetValue(data, null);
                 if (value != null && p.Name != null && p.Name.Length >= 1)
                 {
-                    uri += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
+                    url += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
                            (string)value;
                 }
             }
 
             await TestHandlerHelper.BeforeRequest(client, typeof(IntegrationTestFactory<>));
 
-            var response = await client.GetAsync(uri);
+            var response = await client.GetAsync(url);
 
             await TestHandlerHelper.AfterRequest(client, typeof(IntegrationTestFactory<>));
 
