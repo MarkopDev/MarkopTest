@@ -27,18 +27,18 @@ namespace MarkopTest.Handler
             return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
         }
 
-        internal static async Task BeforeTest(HttpClient httpClient, Type type)
+        internal static async Task BeforeRequest(HttpClient httpClient, Type type)
         {
             var handler = GetTestHandler(type);
             if (handler != null)
-                await handler.Before(httpClient);
+                await handler.BeforeRequest(httpClient);
         }
 
-        internal static async Task AfterTest(HttpClient httpClient, Type type)
+        internal static async Task AfterRequest(HttpClient httpClient, Type type)
         {
             var handler = GetTestHandler(type);
             if (handler != null)
-                await handler.After(httpClient);
+                await handler.AfterRequest(httpClient);
         }
     }
 }

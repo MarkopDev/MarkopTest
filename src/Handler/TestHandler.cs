@@ -12,8 +12,8 @@ namespace MarkopTest.Handler
         {
         }
 
-        public virtual Task Before(HttpClient client) => Task.CompletedTask;
+        public virtual Task BeforeRequest(HttpClient client) => Task.CompletedTask;
 
-        public virtual Task After(HttpClient client) => Task.CompletedTask;
+        public virtual Task AfterRequest(HttpClient client) => Task.CompletedTask;
     }
 }

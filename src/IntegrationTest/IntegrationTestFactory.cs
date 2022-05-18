@@ -8,13 +8,17 @@ using System.Text.Json;
 using Xunit.Abstractions;
 using MarkopTest.Handler;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MarkopTest.Attributes;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Endpoint = MarkopTest.Attributes.Endpoint;
 using HttpMethod = MarkopTest.Enums.HttpMethod;
 
 namespace MarkopTest.IntegrationTest
@@ -30,8 +34,6 @@ namespace MarkopTest.IntegrationTest
 
         // for passing the parameters in tests
         private readonly IServiceProvider _serviceProvider;
-
-        public readonly string Uri;
 
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
@@ -57,36 +59,6 @@ namespace MarkopTest.IntegrationTest
                 Initializer(Host.Services);
                 _serviceProvider = Host.Services;
             }
-
-
-            #region AnalizeNamespace
-
-            var actionName = GetType().Name;
-            if (actionName.EndsWith("Tests"))
-                actionName = actionName[..^5];
-            else if (actionName.EndsWith("Test"))
-                actionName = actionName[..^4];
-
-            var path = "";
-            var nameSpace = GetType().Namespace;
-
-            while (!(nameSpace?.EndsWith("Controller") ?? true))
-            {
-                var controller = nameSpace.Split(".").Last();
-
-                nameSpace = nameSpace[..(nameSpace.Length - controller.Length - 1)];
-
-                if (controller.EndsWith("Tests"))
-                    controller = controller[..^5];
-                else if (controller.EndsWith("Test"))
-                    controller = controller[..^4];
-
-                path = controller + "/" + path;
-            }
-
-            #endregion
-
-            Uri = GetUrl(path, actionName);
         }
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
@@ -123,67 +95,120 @@ namespace MarkopTest.IntegrationTest
                     OutputHelper.WriteLine(await response.GetContent());
         }
 
-        protected async Task<HttpResponseMessage> PostJsonAsync(dynamic data,
-            TFetchOptions fetchOptions = null)
+        private string GetUrl()
         {
-            return await RequestJsonAsync(data, HttpMethod.Post, fetchOptions);
-        }
-        
-        protected async Task<HttpResponseMessage> PostAsync(HttpContent content,
-            TFetchOptions fetchOptions = null)
-        {
-            return await RequestAsync(content, HttpMethod.Post, fetchOptions);
-        }
-        
-        protected async Task<HttpResponseMessage> PutJsonAsync(dynamic data,
-            TFetchOptions fetchOptions = null)
-        {
-            return await RequestJsonAsync(data, HttpMethod.Put, fetchOptions);
-        }
-        
-        protected async Task<HttpResponseMessage> PutAsync(HttpContent content,
-            TFetchOptions fetchOptions = null)
-        {
-            return await RequestAsync(content, HttpMethod.Put, fetchOptions);
-        }
-        
-        protected async Task<HttpResponseMessage> PatchJsonAsync(dynamic data,
-            TFetchOptions fetchOptions = null)
-        {
-            return await RequestJsonAsync(data, HttpMethod.Patch, fetchOptions);
-        }
-        
-        protected async Task<HttpResponseMessage> PatchAsync(HttpContent content,
-            TFetchOptions fetchOptions = null)
-        {
-            return await RequestAsync(content, HttpMethod.Patch, fetchOptions);
+            var testMethod = new StackTrace().GetFrames().FirstOrDefault(frame =>
+                    frame.GetMethod()?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)?
+                .GetMethod();
+
+            var attributeObj = testMethod?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
+
+            if (attributeObj == null)
+            {
+                testMethod = new StackTrace().GetFrames().FirstOrDefault(frame =>
+                        frame.GetMethod()?.DeclaringType?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)
+                    ?.GetMethod();
+                attributeObj = testMethod?.DeclaringType?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
+            }
+
+            if (!(attributeObj is Endpoint attribute))
+                throw new NullReferenceException("Test method should have Endpoint attribute.");
+
+            var template = attribute.Template;
+
+            var controllerName = GetType().Name;
+            if (controllerName.EndsWith("Tests"))
+                controllerName = controllerName[..^5];
+            else if (controllerName.EndsWith("Test"))
+                controllerName = controllerName[..^4];
+            else if (controllerName.EndsWith("Controller"))
+                controllerName = controllerName[..^10];
+
+            template = Regex.Replace(template, "\\[controller\\]", controllerName,
+                RegexOptions.IgnoreCase);
+            template = Regex.Replace(template, "\\[action\\]", testMethod.Name,
+                RegexOptions.IgnoreCase);
+
+            return GetUrl(template, controllerName, testMethod.Name);
         }
 
-        private async Task<HttpResponseMessage> RequestJsonAsync(dynamic data, HttpMethod method,
-            TFetchOptions fetchOptions = null)
+        protected HttpResponseMessage PostJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return RequestJson(data, HttpMethod.Post, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage Post(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return Request(content, HttpMethod.Post, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage PutJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return RequestJson(data, HttpMethod.Put, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage Put(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return Request(content, HttpMethod.Put, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage PatchJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage Patch(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return Request(content, HttpMethod.Patch, fetchOptions, handlerOptions);
+        }
+
+        private HttpResponseMessage RequestJson(dynamic data, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
             var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
 
-            return await RequestAsync(content, method, fetchOptions);
+            return Request(content, method, fetchOptions, handlerOptions);
         }
 
-        private async Task<HttpResponseMessage> RequestAsync(HttpContent content, HttpMethod method,
-            TFetchOptions fetchOptions)
+        private HttpResponseMessage Request(HttpContent content, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
+        {
+            var url = GetUrl();
+
+            var testHandlerOptions = handlerOptions ?? new TestHandlerOptions
+            {
+                AfterRequest = true,
+                BeforeRequest = true
+            };
+
+            return RequestAsync(url, content, method, fetchOptions, testHandlerOptions).Result;
+        }
+
+
+        private async Task<HttpResponseMessage> RequestAsync(string url, HttpContent content, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
             var client = GetClient();
 
-            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
-
+            if (handlerOptions.BeforeRequest)
+                await TestHandlerHelper.BeforeRequest(client, typeof(IntegrationTestFactory<>));
 
             var response = method switch
             {
-                HttpMethod.Post => await client.PostAsync(Uri, content),
-                HttpMethod.Put => await client.PutAsync(Uri, content),
-                HttpMethod.Patch => await client.PatchAsync(Uri, content),
+                HttpMethod.Post => await client.PostAsync(url, content),
+                HttpMethod.Put => await client.PutAsync(url, content),
+                HttpMethod.Patch => await client.PatchAsync(url, content),
                 _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
             };
 
-            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
+            if (handlerOptions.AfterRequest)
+                await TestHandlerHelper.AfterRequest(client, typeof(IntegrationTestFactory<>));
 
             await PrintOutput(response);
 
@@ -196,7 +221,7 @@ namespace MarkopTest.IntegrationTest
         {
             var client = GetClient();
 
-            var uri = Uri;
+            var uri = ""; // TODO
 
             var properties = data.GetType().GetProperties();
             foreach (var p in properties)
@@ -209,11 +234,11 @@ namespace MarkopTest.IntegrationTest
                 }
             }
 
-            await TestHandlerHelper.BeforeTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.BeforeRequest(client, typeof(IntegrationTestFactory<>));
 
             var response = await client.GetAsync(uri);
 
-            await TestHandlerHelper.AfterTest(client, typeof(IntegrationTestFactory<>));
+            await TestHandlerHelper.AfterRequest(client, typeof(IntegrationTestFactory<>));
 
             await PrintOutput(response);
 
@@ -227,7 +252,7 @@ namespace MarkopTest.IntegrationTest
             return DefaultClient ?? Host.GetTestClient();
         }
 
-        protected abstract string GetUrl(string path, string actionName);
+        protected abstract string GetUrl(string url, string controllerName, string testMethodName);
         protected abstract void Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
 
@@ -266,5 +291,11 @@ namespace MarkopTest.IntegrationTest
             : base(outputHelper, defaultClient, testOptions)
         {
         }
+    }
+
+    public class TestHandlerOptions
+    {
+        public bool BeforeRequest { set; get; } = true;
+        public bool AfterRequest { set; get; } = true;
     }
 }

@@ -5,17 +5,19 @@ using Application.Common.Enums;
 using Application.DTOs.User;
 using Application.Features.User.Queries.GetProfile;
 using IntegrationTest.Handlers;
+using MarkopTest.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTest.Controller.User;
+namespace IntegrationTest.Controller;
 
-public class GetProfileTests : AppFactory
+[Endpoint("[controller]/[action]")]
+public class UserTests : AppFactory
 {
-    public GetProfileTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
+    public UserTests(ITestOutputHelper outputHelper, HttpClient client = null) : base(outputHelper, client)
     {
     }
-
+    
     [Theory]
     [UserHandler]
     [InlineData(null)]
@@ -23,7 +25,7 @@ public class GetProfileTests : AppFactory
     {
         var data = new GetProfileQuery();
 
-        var response = await PostJsonAsync(data, new FetchOptions
+        var response =  PostJson(data, new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -33,6 +35,7 @@ public class GetProfileTests : AppFactory
             : null;
     }
 
+    [Endpoint("[controller]/GetProfile")]
     [Fact]
     public async Task GetProfile_UnauthorizedUser()
     {

@@ -5,8 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
-using IntegrationTest.Controller.Account;
-using Xunit.Sdk;
 
 namespace IntegrationTest.Utilities;
 
@@ -46,7 +44,7 @@ public static class Extensions
             Password = "TestPassword"
         };
 
-        var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
+        var response = await client.PostAsync("/api/v1.0/Account/SignIn", data);
 
         foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
             client.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -63,7 +61,7 @@ public static class Extensions
             Password = "TestPassword"
         };
 
-        var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
+        var response = await client.PostAsync("api/v1.0/Account/SignIn", data); // TODO
 
         foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
             client.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -80,7 +78,7 @@ public static class Extensions
             Password = "OwnerPassword"
         };
 
-        var response = await client.PostAsync(new SignInTests(new TestOutputHelper(), client).Uri, data);
+        var response = await client.PostAsync("api/v1.0/Account/SignIn", data); // TODO
 
         foreach (var cookie in response.Headers.GetValues("Set-Cookie").ToArray())
             client.DefaultRequestHeaders.Add("Cookie", cookie);

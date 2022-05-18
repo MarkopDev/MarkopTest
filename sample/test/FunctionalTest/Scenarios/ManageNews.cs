@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using IntegrationTest.Controller.Admin.News;
-using IntegrationTest.Controller.News;
+using IntegrationTest.Controller;
 using IntegrationTest.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,22 +19,24 @@ public class ManageNews : AppFactory
         var userClient = await GetClient().User();
         var ownerClient = await GetClient().Owner();
 
-        var newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
+        var newsList = await new NewsTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 
         var currentNewsCount = newsList.Total;
 
-        var createdNews = await new CreateNewsTests(OutputHelper, ownerClient).CreateNews("Test Title");
+        var createdNews =
+            await new IntegrationTest.Controller.Admin.NewsTests(OutputHelper, ownerClient).CreateNews("Test Title");
 
-        newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
+        newsList = await new NewsTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 
         // Should not visible to user until owner set isHidden to false
         Assert.Equal(newsList.Total, currentNewsCount);
         Assert.True(newsList.Data.All(n => n.Id != createdNews.News.Id));
 
-        var editNews = await new EditNewsTests(OutputHelper, ownerClient).EditNews(createdNews.News.Id,
+        var editNews = await new IntegrationTest.Controller.Admin.NewsTests(OutputHelper, ownerClient).EditNews(
+            createdNews.News.Id,
             "Edited Title", "Edited Content", "Edited Preview", false);
 
-        newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
+        newsList = await new NewsTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 
         Assert.Equal(newsList.Total, currentNewsCount + 1);
         Assert.Contains(newsList.Data, n => n.Id == createdNews.News.Id);
@@ -46,9 +47,9 @@ public class ManageNews : AppFactory
         Assert.Equal("Edited Content", editNews.News.Content);
         Assert.Equal("Edited Preview", editNews.News.Preview);
 
-        await new DeleteNewsTests(OutputHelper, ownerClient).DeleteNews(createdNews.News.Id);
+        new IntegrationTest.Controller.Admin.NewsTests(OutputHelper, ownerClient).DeleteNews(createdNews.News.Id);
 
-        newsList = await new GetNewsListFastTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
+        newsList = await new NewsTests(OutputHelper, userClient).GetNewsListFast(1, 100, "");
 
         Assert.Equal(newsList.Total, currentNewsCount - 1);
         Assert.True(newsList.Data.All(n => n.Id != createdNews.News.Id));

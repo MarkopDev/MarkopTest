@@ -23,9 +23,9 @@ public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
     {
     }
 
-    protected override string GetUrl(string path, string actionName)
+    protected override string GetUrl(string url, string controllerName, string testMethodName)
     {
-        return APIs.V1 + path + actionName;
+        return APIs.V1 + url;
     }
 
     protected override void Initializer(IServiceProvider hostServices)

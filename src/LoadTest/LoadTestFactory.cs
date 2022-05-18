@@ -127,7 +127,7 @@ namespace MarkopTest.LoadTest
 
             client ??= GetClient();
 
-            await TestHandlerHelper.BeforeTest(client, typeof(LoadTestFactory<>));
+            await TestHandlerHelper.BeforeRequest(client, typeof(LoadTestFactory<>));
 
             var tasks = new List<Task>();
             var syncMemorySamples = new ConcurrentDictionary<int, long>();
@@ -216,7 +216,7 @@ namespace MarkopTest.LoadTest
 
             await Task.WhenAll(tasks);
 
-            await TestHandlerHelper.AfterTest(client, typeof(LoadTestFactory<>));
+            await TestHandlerHelper.AfterRequest(client, typeof(LoadTestFactory<>));
 
             var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
             var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();

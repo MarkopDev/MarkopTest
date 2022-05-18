@@ -7,7 +7,7 @@ namespace IntegrationTest.Handlers;
 
 public class UserHandler : TestHandler
 {
-    public override async Task Before(HttpClient client)
+    public override async Task BeforeRequest(HttpClient client)
     {
         await client.User();
     }
