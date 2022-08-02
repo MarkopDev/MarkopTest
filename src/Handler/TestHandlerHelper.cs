@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using MarkopTest.FunctionalTest;
 
 namespace MarkopTest.Handler
 {
     internal class TestHandlerHelper
     {
-        private static TestHandler GetTestHandler(Type type)
+        internal static TestHandler GetTestHandler(Type type)
         {
             if (new StackTrace().GetFrames().Any(frame =>
                     frame.GetMethod()?.DeclaringType?.DeclaringType?.BaseType?.BaseType?.Namespace ==
@@ -24,21 +22,8 @@ namespace MarkopTest.Handler
             if (methodBase == null)
                 return null;
 
+            // TODO multiple handler because the attribute can use multiple time
             return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
-        }
-
-        internal static async Task BeforeRequest(HttpClient httpClient, Type type)
-        {
-            var handler = GetTestHandler(type);
-            if (handler != null)
-                await handler.BeforeRequest(httpClient);
-        }
-
-        internal static async Task AfterRequest(HttpClient httpClient, Type type)
-        {
-            var handler = GetTestHandler(type);
-            if (handler != null)
-                await handler.AfterRequest(httpClient);
         }
     }
 }

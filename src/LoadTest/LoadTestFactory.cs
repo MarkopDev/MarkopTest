@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hardware.Info;
-using MarkopTest.Handler;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -45,6 +44,7 @@ namespace MarkopTest.LoadTest
             var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
                           new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
 
+            // TODO update initializer like Integration Test
             if (initial)
                 ConfigureWebHost();
 
@@ -54,6 +54,7 @@ namespace MarkopTest.LoadTest
                 _serviceProvider = Host.Services;
             }
 
+            // TODO calculate URL using endpoint attribute
             #region AnalizeNamespace
 
             var actionName = GetType().Name;
@@ -110,6 +111,7 @@ namespace MarkopTest.LoadTest
                 _host = hostBuilder.Start();
         }
 
+        // TODO add put patch delete and other type of the http method
         protected async Task PostJsonAsync(dynamic data, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
@@ -127,7 +129,8 @@ namespace MarkopTest.LoadTest
 
             client ??= GetClient();
 
-            await TestHandlerHelper.BeforeRequest(client, typeof(LoadTestFactory<>));
+            // TODO handle handler like Integration Test
+            // await TestHandlerHelper.BeforeRequest(client, typeof(LoadTestFactory<>));
 
             var tasks = new List<Task>();
             var syncMemorySamples = new ConcurrentDictionary<int, long>();
@@ -216,7 +219,8 @@ namespace MarkopTest.LoadTest
 
             await Task.WhenAll(tasks);
 
-            await TestHandlerHelper.AfterRequest(client, typeof(LoadTestFactory<>));
+            // TODO handle handler like Integration Test
+            // await TestHandlerHelper.AfterRequest(client, typeof(LoadTestFactory<>));
 
             var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
             var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();
