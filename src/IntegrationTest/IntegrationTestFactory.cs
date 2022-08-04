@@ -4,20 +4,20 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Text.Json;
 using Xunit.Abstractions;
 using MarkopTest.Handler;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using HttpMethod = MarkopTest.Enums.HttpMethod;
 using Microsoft.Extensions.DependencyInjection;
 using Endpoint = MarkopTest.Attributes.Endpoint;
-using HttpMethod = MarkopTest.Enums.HttpMethod;
 
 namespace MarkopTest.IntegrationTest
 {
@@ -173,8 +173,8 @@ namespace MarkopTest.IntegrationTest
             
             var handler = TestHandlerHelper.GetTestHandler(typeof(IntegrationTestFactory<>));
 
-            HttpResponseMessage response = null;
             Exception exception = null;
+            HttpResponseMessage response = null;
             var thread = new Thread(() =>
             {
                 try
