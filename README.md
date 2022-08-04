@@ -14,13 +14,14 @@ Markop Test is a free, open-source, focused testing tool for **.Net**. Using Mar
 
 In order to use Markop test you should do the following steps:
 
-1- Create a test project inside your solution (project type is class library)<br/>
-
-<img alt="test-project-structure" src="assets/test-project-structure.png"  width="1271" /><br/>
-
+1- Create a class library project inside your solution and name it according to the kind of test you want to perform, e.g., "FunctionalTest". Don't forget to add the project to your solution.<br/>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="dotnet new classlib -n [YOUR PROJECT NAME]">
+    <pre class="notranslate"><code>dotnet new classlib -n [YOUR PROJECT NAME]</code></pre>
+</div>
+<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="dotnet sln add [YOUR PROJECT NAME]">
+    <pre class="notranslate"><code>dotnet sln add [YOUR PROJECT NAME]</code></pre>
+</div>
 2- Inside the newly created project add a reference to the project you want to test<br/>
-
-<img alt="reference" src="assets/reference.png"  width="1271" /><br/>
 
 3- Install the Markop Test package inside your test project:<br/>
  <p>Nuget:</p>
@@ -34,11 +35,13 @@ In order to use Markop test you should do the following steps:
 
 4- Depending on the kind of testing you want to perform you should go to: [Unit test](#unit-test)
 , [Integration test](#integration-test),
-[Functional tests](#functional-test) or load testing
+[Functional test](#functional-test) or [Load test](#load-test).
 
 ## Unit Test
 
 <p> Unit Tests are supposed to test the behaviour of a smallest piece of code. Markop Test is here to make this process fully automated. Writing Unit Tests has never been easier before!!</p>
+
+### Usage
 <p>First of all you should create an <code>AppFactory</code> class extend it from <code>UnitTestFactory</code> class.</p>
 <p>Then you need to override <code>Initializer</code> and <code>ConfigureTestServices</code> methods</p>
 <p><code>Initializer</code> method gives you the ability to initiate a custom database for testing all you have to do is to build your custom initializer and called it here. Markop Test will take care of the rest!!</p>
@@ -68,9 +71,22 @@ instead of using external API testing tools such as Postman.
     <img alt="integration-test" src="assets/integration-test.png" width="1271" />
 </p>
 
-#### Usage
+### Usage
+<p>First of all you should create an <code>AppFactory</code> class extend it from <code>IntegrationTestFactory</code> class.</p>
 
-- TODO
+Next you need to override [Initializer](#1--codeinitializeriserviceprovider-hostservicescode), [ConfigureTestServices](#2--codeconfiguretestservicesiservicecollection-servicescode), [GetUrl](#3--codegeturlstring-url-string-controllername-string-testmethodnamecode), [ValidateResponse](#4--codevalidateresponsehttpresponsemessage-httpresponsemessagetfetchoptions-fetchoptionscode) methods.
+<p>Then you need to create a class and extend it from your own <code>AppFactory</code> class. For a cleaner implementation we suggest creating a class for each controller in your API.</p>
+<p>Use <code>Endpoint</code> atrribute to specify a pattern for request addresses.</p>
+<p>Next, you should define a method inside your class and put your pereferable test attribute. It can be <code>[Fact]</code> or <code>[Theory]</code> or any other valid test attribute in Xunit.</p>
+<p>Now you can start writing your test code inside your method!!</p>
+<p>For example in the below code we wrote code to test a <code>SignIn</code> API </p>
+<img alt="integration-test-eg" src="assets/integration-test-eg.png"  width="1271" />
+
+**Attention1**: At runtime variables like <code>controller</code> and <code>action</code> inside <code>Endpoint</code> atrribute will be intitalized with **_name of your class_** and **_name of your method_**.
+
+**Attention2**: Markop Test automatically ignors the ["Test", "Tests", "Controller"] at end of your class name.
+
+For example in the above code the <code>controller</code> value will be "Account" and the <code>action</code> value will be "SignIn". The requests will be sent to <code>/Account/SignIn</code> endpoint.
 
 ## Functional Test
 
@@ -84,6 +100,25 @@ functional test.
 #### Usage
 
 - TODO
+
+## Load Test
+
+### Usage
+- Todo
+
+## Present Methods
+### 1- <code>Initializer(IServiceProvider hostServices)</code>:
+<code>Initializer</code> method gives you the ability to initiate a custom database for testing. All you have to do is to build your custom initializer and called it here. Markop Test will take care of the rest!!</p>
+### 2- <code>ConfigureTestServices(IServiceCollection services)</code>
+<p><code>ConfigureTestServices</code> method gives you the ability to register/remove the services. This way you will have full control over the registered services of your app before you start testing!! </p>
+A sample implementation looks like this:
+<img alt="unit-test-app-factory" src="assets/unit-test-app-factory.png"  width="1271" /><br/>
+
+### 3- <code>GetUrl(string url, string controllerName, string testMethodName)</code>
+<code>GetUrl</code> helps you to build the correct address to which HttpClient is going to send the request.
+
+### 4- <code>ValidateResponse(HttpResponseMessage httpResponseMessage,TFetchOptions fetchOptions)</code>
+<code>ValidateResponse</code> enables you to customise the response validation proccess according to expected behaviour of your API. 
 
 ## Contributions
 
