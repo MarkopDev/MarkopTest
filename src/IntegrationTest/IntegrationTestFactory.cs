@@ -207,6 +207,7 @@ namespace MarkopTest.IntegrationTest
         {
             var response = method switch
             {
+                // TODO add delete method
                 HttpMethod.Put => await client.PutAsync(url, content),
                 HttpMethod.Post => await client.PostAsync(url, content),
                 HttpMethod.Patch => await client.PatchAsync(url, content),
