@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using HttpMethod = MarkopTest.Enums.HttpMethod;
 using Microsoft.Extensions.DependencyInjection;
 using Endpoint = MarkopTest.Attributes.Endpoint;
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace MarkopTest.IntegrationTest
 {
@@ -27,17 +28,15 @@ namespace MarkopTest.IntegrationTest
         where TTestOptions : IntegrationTestOptions, new()
     {
         private static IHost _host;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-        private readonly ManualResetEvent _initializationTask = new ManualResetEvent(false);
-
         private IHost _seperatedHost;
-
-        // for passing the parameters in tests
         private IServiceProvider _serviceProvider;
 
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
+        
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly ManualResetEventSlim _initializationTask = new ManualResetEventSlim(false);
         protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
 
         protected IntegrationTestFactory(ITestOutputHelper outputHelper, HttpClient defaultClient,
@@ -55,10 +54,10 @@ namespace MarkopTest.IntegrationTest
             // Prevent call this method twice concurrently
             await _semaphore.WaitAsync();
 
-            if (!_initializationTask.WaitOne(TimeSpan.Zero))
+            if (!_initializationTask.Wait(TimeSpan.Zero))
                 await ConfigureWebHost();
 
-            if (_initializationTask.WaitOne(TimeSpan.Zero) || Host == null)
+            if (_initializationTask.Wait(TimeSpan.Zero) || Host == null)
                 return;
 
             _serviceProvider = Host.Services;
@@ -106,11 +105,14 @@ namespace MarkopTest.IntegrationTest
 
         protected HttpClient GetClient()
         {
+            if (DefaultClient != null)
+                return DefaultClient;
+            
             new Thread(InitializeHost).Start();
 
-            _initializationTask.WaitOne(int.MaxValue);
+            _initializationTask.Wait(-1);
 
-            return DefaultClient ?? Host.GetTestClient();
+            return Host.GetTestClient();
         }
 
         private string GetUrl()
