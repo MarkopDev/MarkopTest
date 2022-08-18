@@ -1,6 +1,7 @@
 ﻿using WebAPI;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 using MarkopTest.FunctionalTest;
 using Infrastructure.Persistence;
@@ -12,16 +13,13 @@ namespace FunctionalTest;
 
 public class AppFactory : FunctionalTestFactory<Startup>
 {
-    public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper, new FunctionalTestOptions
-    {
-        HostSeparation = true
-    })
+    public AppFactory(ITestOutputHelper outputHelper) : base(outputHelper, new FunctionalTestOptions())
     {
     }
 
-    protected override void Initializer(IServiceProvider hostServices)
+    protected override async Task Initializer(IServiceProvider hostServices)
     {
-        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+        await new DatabaseInitializer(hostServices).Initialize();
     }
 
     protected override void ConfigureTestServices(IServiceCollection services)
@@ -34,9 +32,6 @@ public class AppFactory : FunctionalTestFactory<Startup>
 
         // Use this trick to have different database in host separation
         var dbName = "InMemoryDbForTesting" + Guid.NewGuid();
-        services.AddDbContextPool<DatabaseContext>(options =>
-        {
-            options.UseInMemoryDatabase(dbName);
-        });
+        services.AddDbContextPool<DatabaseContext>(options => options.UseInMemoryDatabase(dbName));
     }
 }

@@ -27,10 +27,12 @@ namespace MarkopTest.LoadTest
         where TTestOptions : LoadTestOptions, new()
     {
         private static IHost _host;
+
         private IHost _seperatedHost;
+
         // for passing the parameters in tests
-        private readonly IServiceProvider _serviceProvider;
-        
+        private IServiceProvider _serviceProvider;
+
         public readonly string Uri;
         protected readonly TTestOptions TestOptions;
         private readonly ITestOutputHelper _outputHelper;
@@ -55,6 +57,7 @@ namespace MarkopTest.LoadTest
             }
 
             // TODO calculate URL using endpoint attribute
+
             #region AnalizeNamespace
 
             var actionName = GetType().Name;
@@ -241,14 +244,14 @@ namespace MarkopTest.LoadTest
             _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
             _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
 
-            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
-            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
+            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
+            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
 
             var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] {group.Key, group.Count()}; })
+                .Select(group => { return new[] { group.Key, group.Count() }; })
                 .OrderBy(x => x[1]).ToArray();
             var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] {group.Key, group.Count()}; })
+                .Select(group => { return new[] { group.Key, group.Count() }; })
                 .OrderBy(x => x[1]).ToArray();
 
             var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
@@ -331,7 +334,7 @@ namespace MarkopTest.LoadTest
                 AsyncMinResponseTime = asyncRequestResponseTimes.Min(),
                 AsyncMaxResponseTime = asyncRequestResponseTimes.Max(),
                 OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                RamSize = hardwareInfo.MemoryList.Sum(m => (long) m.Capacity),
+                RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
 
