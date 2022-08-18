@@ -26,35 +26,22 @@ namespace MarkopTest.LoadTest
         where TFetchOptions : class
         where TTestOptions : LoadTestOptions, new()
     {
-        private static IHost _host;
-
-        private IHost _seperatedHost;
-
-        // for passing the parameters in tests
-        private IServiceProvider _serviceProvider;
-
         public readonly string Uri;
+        private static IHost _host;
+        private IHost _seperatedHost;
+        
+        private IServiceProvider _serviceProvider;
         protected readonly TTestOptions TestOptions;
         private readonly ITestOutputHelper _outputHelper;
         protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
+        
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly ManualResetEventSlim _initializationTask = new ManualResetEventSlim(false);
 
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             _outputHelper = outputHelper;
             TestOptions = testOptions ?? new TTestOptions();
-
-            var initial = new StackTrace().GetFrame(4)?.GetMethod()?.Name == "InvokeMethod" ||
-                          new StackTrace().GetFrame(3)?.GetMethod()?.Name == "InvokeMethod";
-
-            // TODO update initializer like Integration Test
-            if (initial)
-                ConfigureWebHost();
-
-            if (initial && Host != null)
-            {
-                Initializer(Host.Services);
-                _serviceProvider = Host.Services;
-            }
 
             // TODO calculate URL using endpoint attribute
 
@@ -90,7 +77,28 @@ namespace MarkopTest.LoadTest
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
 
-        private void ConfigureWebHost()
+        private async void InitializeHost()
+        {
+            // Prevent call this method twice concurrently
+            await _semaphore.WaitAsync();
+
+            if (!_initializationTask.Wait(TimeSpan.Zero))
+                await ConfigureWebHost();
+
+            if (_initializationTask.Wait(TimeSpan.Zero) || Host == null)
+                return;
+
+            _serviceProvider = Host.Services;
+            await Initializer(Host.Services);
+
+            _initializationTask.Set();
+
+            _semaphore.Release();
+
+            await Host.WaitForShutdownAsync();
+        }
+
+        private async Task ConfigureWebHost()
         {
             if (!TestOptions.HostSeparation && _host != null)
                 return;
@@ -109,9 +117,9 @@ namespace MarkopTest.LoadTest
                 });
 
             if (TestOptions.HostSeparation)
-                _seperatedHost = hostBuilder.Start();
+                _seperatedHost = await hostBuilder.StartAsync();
             else
-                _host = hostBuilder.Start();
+                _host = await hostBuilder.StartAsync();
         }
 
         // TODO add put patch delete and other type of the http method
@@ -364,6 +372,9 @@ namespace MarkopTest.LoadTest
 
         protected HttpClient GetClient()
         {
+            new Thread(InitializeHost).Start();
+            _initializationTask.Wait(-1);
+            
             if (TestOptions.BaseAddress == null)
                 return Host.GetTestClient();
 
@@ -378,7 +389,7 @@ namespace MarkopTest.LoadTest
         }
 
         protected abstract string GetUrl(string path, string actionName);
-        protected abstract void Initializer(IServiceProvider hostServices);
+        protected abstract Task Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
     }
 

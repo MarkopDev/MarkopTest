@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Infrastructure.Persistence;
 using MarkopTest.LoadTest;
 using Microsoft.EntityFrameworkCore;
@@ -24,9 +25,9 @@ public class AppFactory : LoadTestFactory<Startup>
         return APIs.V1 + path + actionName;
     }
 
-    protected override void Initializer(IServiceProvider hostServices)
+    protected override async Task Initializer(IServiceProvider hostServices)
     {
-        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+        await new DatabaseInitializer(hostServices).Initialize();
     }
 
     protected override void ConfigureTestServices(IServiceCollection services)
