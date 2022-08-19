@@ -8,9 +8,11 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Hardware.Info;
+using MarkopTest.Attributes;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -26,15 +28,14 @@ namespace MarkopTest.LoadTest
         where TFetchOptions : class
         where TTestOptions : LoadTestOptions, new()
     {
-        public readonly string Uri;
         private static IHost _host;
         private IHost _seperatedHost;
-        
+
         private IServiceProvider _serviceProvider;
         protected readonly TTestOptions TestOptions;
         private readonly ITestOutputHelper _outputHelper;
         protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
-        
+
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         private readonly ManualResetEventSlim _initializationTask = new ManualResetEventSlim(false);
 
@@ -42,37 +43,6 @@ namespace MarkopTest.LoadTest
         {
             _outputHelper = outputHelper;
             TestOptions = testOptions ?? new TTestOptions();
-
-            // TODO calculate URL using endpoint attribute
-
-            #region AnalizeNamespace
-
-            var actionName = GetType().Name;
-            if (actionName.EndsWith("Tests"))
-                actionName = actionName[..^5];
-            else if (actionName.EndsWith("Test"))
-                actionName = actionName[..^4];
-
-            var path = "";
-            var nameSpace = GetType().Namespace;
-
-            while (!(nameSpace?.EndsWith("Controller") ?? true))
-            {
-                var controller = nameSpace.Split(".").Last();
-
-                nameSpace = nameSpace[..(nameSpace.Length - controller.Length - 1)];
-
-                if (controller.EndsWith("Tests"))
-                    controller = controller[..^5];
-                else if (controller.EndsWith("Test"))
-                    controller = controller[..^4];
-
-                path = controller + "/" + path;
-            }
-
-            #endregion
-
-            Uri = GetUrl(path, actionName);
         }
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
@@ -122,17 +92,74 @@ namespace MarkopTest.LoadTest
                 _host = await hostBuilder.StartAsync();
         }
 
+        protected HttpClient GetClient()
+        {
+            new Thread(InitializeHost).Start();
+            _initializationTask.Wait(-1);
+
+            if (TestOptions.BaseAddress == null)
+                return Host.GetTestClient();
+
+            var httpClientHandler = new HttpClientHandler
+            {
+                Proxy = TestOptions.Proxy
+            };
+            return new HttpClient(httpClientHandler)
+            {
+                BaseAddress = TestOptions.BaseAddress
+            };
+        }
+
+        private string GetUrl()
+        {
+            var testMethod = new StackTrace().GetFrames().FirstOrDefault(frame =>
+                    frame.GetMethod()?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)?
+                .GetMethod();
+
+            var attributeObj = testMethod?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
+
+            if (attributeObj == null)
+            {
+                testMethod = new StackTrace().GetFrames().FirstOrDefault(frame =>
+                        frame.GetMethod()?.DeclaringType?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)
+                    ?.GetMethod();
+                attributeObj = testMethod?.DeclaringType?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
+            }
+
+            if (!(attributeObj is Endpoint attribute))
+                throw new NullReferenceException("Test method should have Endpoint attribute.");
+
+            var template = attribute.Template;
+
+            var controllerName = GetType().Name;
+            if (controllerName.EndsWith("Tests"))
+                controllerName = controllerName[..^5];
+            else if (controllerName.EndsWith("Test"))
+                controllerName = controllerName[..^4];
+            else if (controllerName.EndsWith("Controller"))
+                controllerName = controllerName[..^10];
+
+            template = Regex.Replace(template, "\\[controller\\]", controllerName,
+                RegexOptions.IgnoreCase);
+            template = Regex.Replace(template, "\\[action\\]", testMethod.Name,
+                RegexOptions.IgnoreCase);
+
+            return GetUrl(template, controllerName, testMethod.Name);
+        }
+
         // TODO add put patch delete and other type of the http method
-        protected async Task PostJsonAsync(dynamic data, HttpClient client = null,
+        protected void PostJson(dynamic data, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
+            var url = GetUrl();
+            
             var content = new StringContent(JsonSerializer.Serialize(data),
                 Encoding.Default, "application/json");
 
-            await PostAsync(content, client, fetchOptions);
+            PostAsync(url, content, client, fetchOptions).GetAwaiter().GetResult();
         }
 
-        protected async Task PostAsync(HttpContent content, HttpClient client = null,
+        protected async Task PostAsync(string url, HttpContent content, HttpClient client = null,
             TFetchOptions fetchOptions = null)
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != Environments.Development)
@@ -159,7 +186,7 @@ namespace MarkopTest.LoadTest
 
                 try
                 {
-                    response = await client.PostAsync(Uri, content);
+                    response = await client.PostAsync(url, content);
                 }
                 catch (Exception)
                 {
@@ -201,7 +228,7 @@ namespace MarkopTest.LoadTest
 
                     try
                     {
-                        response = await client.PostAsync(Uri, content);
+                        response = await client.PostAsync(url, content);
                     }
                     catch (Exception)
                     {
@@ -252,14 +279,14 @@ namespace MarkopTest.LoadTest
             _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
             _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
 
-            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
-            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
+            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
+            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
 
             var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] { group.Key, group.Count() }; })
+                .Select(group => { return new[] {group.Key, group.Count()}; })
                 .OrderBy(x => x[1]).ToArray();
             var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] { group.Key, group.Count() }; })
+                .Select(group => { return new[] {group.Key, group.Count()}; })
                 .OrderBy(x => x[1]).ToArray();
 
             var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
@@ -321,7 +348,7 @@ namespace MarkopTest.LoadTest
 
             var model = new ExportResultModel
             {
-                ApiUrl = Uri,
+                ApiUrl = url,
                 SyncAvgResponseTime = syncAverage,
                 BaseColor = TestOptions.BaseColor,
                 AsyncAvgResponseTime = asyncAverage,
@@ -342,7 +369,7 @@ namespace MarkopTest.LoadTest
                 AsyncMinResponseTime = asyncRequestResponseTimes.Min(),
                 AsyncMaxResponseTime = asyncRequestResponseTimes.Max(),
                 OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
+                RamSize = hardwareInfo.MemoryList.Sum(m => (long) m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
 
@@ -369,28 +396,10 @@ namespace MarkopTest.LoadTest
                 Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
             }
         }
-
-        protected HttpClient GetClient()
-        {
-            new Thread(InitializeHost).Start();
-            _initializationTask.Wait(-1);
-            
-            if (TestOptions.BaseAddress == null)
-                return Host.GetTestClient();
-
-            var httpClientHandler = new HttpClientHandler
-            {
-                Proxy = TestOptions.Proxy
-            };
-            return new HttpClient(httpClientHandler)
-            {
-                BaseAddress = TestOptions.BaseAddress
-            };
-        }
-
-        protected abstract string GetUrl(string path, string actionName);
+        
         protected abstract Task Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
+        protected abstract string GetUrl(string url, string controllerName, string testMethodName);
     }
 
     public abstract class LoadTestFactory<TStartup, TFetchOption>

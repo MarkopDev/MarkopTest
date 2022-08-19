@@ -20,9 +20,9 @@ public class AppFactory : LoadTestFactory<Startup>
         TestOptions.BaseColor = "#078889";
     }
 
-    protected override string GetUrl(string path, string actionName)
+    protected override string GetUrl(string url, string controllerName, string testMethodName)
     {
-        return APIs.V1 + path + actionName;
+        return APIs.V1 + url;
     }
 
     protected override async Task Initializer(IServiceProvider hostServices)
