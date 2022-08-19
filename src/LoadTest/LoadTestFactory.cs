@@ -64,8 +64,6 @@ namespace MarkopTest.LoadTest
             _initializationTask.Set();
 
             _semaphore.Release();
-
-            await Host.WaitForShutdownAsync();
         }
 
         private async Task ConfigureWebHost()
@@ -94,7 +92,7 @@ namespace MarkopTest.LoadTest
 
         protected HttpClient GetClient()
         {
-            new Thread(InitializeHost).Start();
+            InitializeHost();
             _initializationTask.Wait(-1);
 
             if (TestOptions.BaseAddress == null)
@@ -152,7 +150,7 @@ namespace MarkopTest.LoadTest
             TFetchOptions fetchOptions = null)
         {
             var url = GetUrl();
-            
+
             var content = new StringContent(JsonSerializer.Serialize(data),
                 Encoding.Default, "application/json");
 
@@ -279,14 +277,14 @@ namespace MarkopTest.LoadTest
             _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
             _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
 
-            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
-            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] {i, l}).ToArray();
+            var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
+            var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
 
             var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] {group.Key, group.Count()}; })
+                .Select(group => { return new[] { group.Key, group.Count() }; })
                 .OrderBy(x => x[1]).ToArray();
             var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] {group.Key, group.Count()}; })
+                .Select(group => { return new[] { group.Key, group.Count() }; })
                 .OrderBy(x => x[1]).ToArray();
 
             var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
@@ -369,7 +367,7 @@ namespace MarkopTest.LoadTest
                 AsyncMinResponseTime = asyncRequestResponseTimes.Min(),
                 AsyncMaxResponseTime = asyncRequestResponseTimes.Max(),
                 OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                RamSize = hardwareInfo.MemoryList.Sum(m => (long) m.Capacity),
+                RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
 
@@ -396,7 +394,7 @@ namespace MarkopTest.LoadTest
                 Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
             }
         }
-        
+
         protected abstract Task Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
         protected abstract string GetUrl(string url, string controllerName, string testMethodName);

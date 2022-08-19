@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace MarkopTest.FunctionalTest
@@ -52,8 +53,6 @@ namespace MarkopTest.FunctionalTest
             _initializationTask.Set();
 
             _semaphore.Release();
-
-            await Host.WaitForShutdownAsync();
         }
 
         private async Task ConfigureWebHost()
@@ -82,7 +81,7 @@ namespace MarkopTest.FunctionalTest
 
         protected HttpClient GetClient()
         {
-            new Thread(InitializeHost).Start();
+            InitializeHost();
 
             _initializationTask.Wait(-1);
 

@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using HttpMethod = MarkopTest.Enums.HttpMethod;
 using Microsoft.Extensions.DependencyInjection;
 using Endpoint = MarkopTest.Attributes.Endpoint;
+
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace MarkopTest.IntegrationTest
@@ -34,7 +35,7 @@ namespace MarkopTest.IntegrationTest
         protected readonly TTestOptions TestOptions;
         protected readonly HttpClient DefaultClient;
         protected readonly ITestOutputHelper OutputHelper;
-        
+
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         private readonly ManualResetEventSlim _initializationTask = new ManualResetEventSlim(false);
         protected IServiceProvider Services => _serviceProvider.CreateScope().ServiceProvider;
@@ -66,8 +67,6 @@ namespace MarkopTest.IntegrationTest
             _initializationTask.Set();
 
             _semaphore.Release();
-
-            await Host.WaitForShutdownAsync();
         }
 
         private async Task ConfigureWebHost()
@@ -107,8 +106,8 @@ namespace MarkopTest.IntegrationTest
         {
             if (DefaultClient != null)
                 return DefaultClient;
-            
-            new Thread(InitializeHost).Start();
+
+            InitializeHost();
 
             _initializationTask.Wait(-1);
 
@@ -170,9 +169,9 @@ namespace MarkopTest.IntegrationTest
                 AfterRequest = true,
                 BeforeRequest = true
             };
-            
+
             var client = GetClient();
-            
+
             var handler = TestHandlerHelper.GetTestHandler(typeof(IntegrationTestFactory<>));
 
             Exception exception = null;
@@ -183,7 +182,7 @@ namespace MarkopTest.IntegrationTest
                 {
                     if (testHandlerOptions.BeforeRequest && handler != null)
                         handler.BeforeRequest(client).GetAwaiter().GetResult();
-                
+
                     response = RequestAsync(url, client, content, method, fetchOptions).Result;
 
                     if (testHandlerOptions.AfterRequest && handler != null)
@@ -243,7 +242,7 @@ namespace MarkopTest.IntegrationTest
             {
                 if (testHandlerOptions.BeforeRequest && handler != null)
                     handler.BeforeRequest(client).GetAwaiter().GetResult();
-                
+
                 response = GetAsync(url, client, data, fetchOptions).Result;
 
                 if (testHandlerOptions.AfterRequest && handler != null)
@@ -255,7 +254,8 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        private async Task<HttpResponseMessage> GetAsync(string url, HttpClient client, dynamic data, TFetchOptions fetchOptions)
+        private async Task<HttpResponseMessage> GetAsync(string url, HttpClient client, dynamic data,
+            TFetchOptions fetchOptions)
         {
             var properties = data.GetType().GetProperties();
             foreach (var p in properties)
@@ -264,7 +264,7 @@ namespace MarkopTest.IntegrationTest
                 if (value != null && p.Name != null && p.Name.Length >= 1)
                 {
                     url += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
-                           (string) value;
+                           (string)value;
                 }
             }
 
