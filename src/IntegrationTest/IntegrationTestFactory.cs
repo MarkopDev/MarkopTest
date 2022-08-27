@@ -353,10 +353,4 @@ namespace MarkopTest.IntegrationTest
         {
         }
     }
-
-    public class TestHandlerOptions
-    {
-        public bool BeforeRequest { set; get; } = true;
-        public bool AfterRequest { set; get; } = true;
-    }
 }
