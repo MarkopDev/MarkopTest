@@ -15,7 +15,7 @@ public class GetNewsListFastTests : AppFactory
     [Theory]
     [UserHandler]
     [InlineData(1, 100)]
-    [Endpoint("News/GetNewsList")]
+    [Endpoint("News/GetNewsListFast")]
     public void GetNewsListFast(int pageNumber, int pageSize)
     {
         var data = new GetNewsListFastQuery

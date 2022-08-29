@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hardware.Info;
 using MarkopTest.Attributes;
+using MarkopTest.Handler;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -20,6 +22,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit.Abstractions;
+using HttpMethod = MarkopTest.Enums.HttpMethod;
+
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace MarkopTest.LoadTest
 {
@@ -145,29 +150,120 @@ namespace MarkopTest.LoadTest
             return GetUrl(template, controllerName, testMethod.Name);
         }
 
-        // TODO add put patch delete and other type of the http method
-        protected void PostJson(dynamic data, HttpClient client = null,
-            TFetchOptions fetchOptions = null)
+        #region Json Methods
+
+        protected void PostJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            RequestJson(data, HttpMethod.Post, fetchOptions, handlerOptions);
+        }
+
+        protected void PutJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            RequestJson(data, HttpMethod.Put, fetchOptions, handlerOptions);
+        }
+
+        protected void PatchJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
+        }
+
+        private void RequestJson(dynamic data, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+
+            Request(content, method, fetchOptions, handlerOptions);
+        }
+
+        #endregion
+
+        #region Non-Json Methods
+
+        protected void Post(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            Request(content, HttpMethod.Post, fetchOptions, handlerOptions);
+        }
+
+        protected void Put(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            Request(content, HttpMethod.Put, fetchOptions, handlerOptions);
+        }
+
+        protected void Patch(HttpContent content,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            Request(content, HttpMethod.Patch, fetchOptions, handlerOptions);
+        }
+
+        #endregion
+
+        #region Request Methods
+
+          private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
+            HttpMethod method, TFetchOptions fetchOptions)
+        {
+            var response = method switch
+            {
+                // TODO add delete method
+                HttpMethod.Put => await client.PutAsync(url, content),
+                HttpMethod.Post => await client.PostAsync(url, content),
+                HttpMethod.Patch => await client.PatchAsync(url, content),
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+            };
+            return response;
+        }
+
+        private void Request(HttpContent content, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
             var url = GetUrl();
 
-            var content = new StringContent(JsonSerializer.Serialize(data),
-                Encoding.Default, "application/json");
+            var testHandlerOptions = handlerOptions ?? new TestHandlerOptions
+            {
+                AfterRequest = true,
+                BeforeRequest = true
+            };
 
-            PostAsync(url, content, client, fetchOptions).GetAwaiter().GetResult();
+            var client = GetClient();
+
+            var handler = TestHandlerHelper.GetTestHandler(typeof(LoadTestFactory<>));
+
+            Exception exception = null;
+
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    if (testHandlerOptions.BeforeRequest && handler != null)
+                        handler.BeforeRequest(client).GetAwaiter().GetResult();
+
+                    PerformLoadRequest(url, client, content, method, fetchOptions).GetAwaiter().GetResult();
+
+                    if (testHandlerOptions.AfterRequest && handler != null)
+                        handler.AfterRequest(client).GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+                }
+            });
+            thread.Start();
+            thread.Join();
+
+            if (exception != null)
+                throw exception;
         }
 
-        protected async Task PostAsync(string url, HttpContent content, HttpClient client = null,
-            TFetchOptions fetchOptions = null)
+        private async Task PerformLoadRequest(string url, HttpClient client, HttpContent content,
+            HttpMethod method, TFetchOptions fetchOptions)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != Environments.Development)
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Production)
                 return;
-
-            client ??= GetClient();
-
-            // TODO handle handler like Integration Test
-            // await TestHandlerHelper.BeforeRequest(client, typeof(LoadTestFactory<>));
-
             var tasks = new List<Task>();
             var syncMemorySamples = new ConcurrentDictionary<int, long>();
             var asyncMemorySamples = new ConcurrentDictionary<int, long>();
@@ -184,7 +280,7 @@ namespace MarkopTest.LoadTest
 
                 try
                 {
-                    response = await client.PostAsync(url, content);
+                    response = await RequestAsync(url, client, content, method, fetchOptions);
                 }
                 catch (Exception)
                 {
@@ -226,7 +322,7 @@ namespace MarkopTest.LoadTest
 
                     try
                     {
-                        response = await client.PostAsync(url, content);
+                        response = await RequestAsync(url, client, content, method, fetchOptions);
                     }
                     catch (Exception)
                     {
@@ -254,9 +350,6 @@ namespace MarkopTest.LoadTest
             }
 
             await Task.WhenAll(tasks);
-
-            // TODO handle handler like Integration Test
-            // await TestHandlerHelper.AfterRequest(client, typeof(LoadTestFactory<>));
 
             var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
             var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();
@@ -366,7 +459,7 @@ namespace MarkopTest.LoadTest
                 SyncMaxResponseTime = syncRequestResponseTimes.Max(),
                 AsyncMinResponseTime = asyncRequestResponseTimes.Min(),
                 AsyncMaxResponseTime = asyncRequestResponseTimes.Max(),
-                OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                OS = RuntimeInformation.OSDescription,
                 RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
@@ -395,9 +488,15 @@ namespace MarkopTest.LoadTest
             }
         }
 
+        #endregion
+
+        #region Abstract Methods
+
         protected abstract Task Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);
         protected abstract string GetUrl(string url, string controllerName, string testMethodName);
+
+        #endregion
     }
 
     public abstract class LoadTestFactory<TStartup, TFetchOption>

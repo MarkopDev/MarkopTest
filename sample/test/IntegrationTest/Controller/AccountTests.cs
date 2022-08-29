@@ -6,7 +6,7 @@ using Application.Features.Account.Commands.SignOut;
 using Application.Features.Account.Commands.SignUp;
 using IntegrationTest.Handlers;
 using MarkopTest.Attributes;
-using MarkopTest.IntegrationTest;
+using MarkopTest.Handler;
 using Xunit;
 using Xunit.Abstractions;
 
