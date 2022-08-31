@@ -1,14 +1,12 @@
-﻿using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Application.Common.Enums;
 using Application.Features.Account.Commands.SignIn;
 using Application.Features.Account.Commands.SignOut;
 using Application.Features.Account.Commands.SignUp;
 using IntegrationTest.Handlers;
 using MarkopTest.Attributes;
-using MarkopTest.IntegrationTest;
+using MarkopTest.Handler;
 using Xunit;
 using Xunit.Abstractions;
 

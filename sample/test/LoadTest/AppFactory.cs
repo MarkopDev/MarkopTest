@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Infrastructure.Persistence;
 using MarkopTest.LoadTest;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,14 @@ public class AppFactory : LoadTestFactory<Startup>
         TestOptions.BaseColor = "#078889";
     }
 
-    protected override string GetUrl(string path, string actionName)
+    protected override string GetUrl(string url, string controllerName, string testMethodName)
     {
-        return APIs.V1 + path + actionName;
+        return APIs.V1 + url;
     }
 
-    protected override void Initializer(IServiceProvider hostServices)
+    protected override async Task Initializer(IServiceProvider hostServices)
     {
-        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+        await new DatabaseInitializer(hostServices).Initialize();
     }
 
     protected override void ConfigureTestServices(IServiceCollection services)

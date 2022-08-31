@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Application.Features.News.Queries.GetNewsListSlow;
+﻿using Application.Features.News.Queries.GetNewsListSlow;
 using IntegrationTest.Handlers;
+using MarkopTest.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,7 +15,8 @@ public class GetNewsListSlowTests : AppFactory
     [Theory]
     [UserHandler]
     [InlineData(1, 100)]
-    public async Task GetNewsListSlow(int pageNumber, int pageSize)
+    [Endpoint("News/GetNewsList")]
+    public void GetNewsListSlow(int pageNumber, int pageSize)
     {
         var data = new GetNewsListSlowQuery
         {
@@ -23,6 +24,6 @@ public class GetNewsListSlowTests : AppFactory
             PageNumber = pageNumber,
         };
 
-        await PostJsonAsync(data);
+        PostJson(data);
     }
 }

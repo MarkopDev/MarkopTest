@@ -19,7 +19,7 @@ namespace IntegrationTest;
 public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
 {
     public AppFactory(ITestOutputHelper outputHelper, HttpClient defaultClient)
-        : base(outputHelper, defaultClient, new IntegrationTestOptions {HostSeparation = true})
+        : base(outputHelper, defaultClient, new IntegrationTestOptions())
     {
     }
 
@@ -28,9 +28,9 @@ public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
         return APIs.V1 + url;
     }
 
-    protected override void Initializer(IServiceProvider hostServices)
+    protected override async Task Initializer(IServiceProvider hostServices)
     {
-        new DatabaseInitializer(hostServices).Initialize().GetAwaiter().GetResult();
+        await new DatabaseInitializer(hostServices).Initialize();
     }
 
     protected override void ConfigureTestServices(IServiceCollection services)
@@ -55,6 +55,8 @@ public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
             responseHttpStatusCode = HttpStatusCode.NotAcceptable;
         if (fetchOptions.ErrorCode == ErrorCode.Unauthorized)
             responseHttpStatusCode = HttpStatusCode.Unauthorized;
+        if (fetchOptions.ErrorCode == ErrorCode.NotFound)
+            responseHttpStatusCode = HttpStatusCode.NotFound;
 
         Assert.Equal(responseHttpStatusCode, httpResponseMessage.StatusCode);
 

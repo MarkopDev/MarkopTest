@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Application.Features.User.Queries.GetProfile;
+﻿using Application.Features.User.Queries.GetProfile;
 using IntegrationTest.Handlers;
+using MarkopTest.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,10 +14,11 @@ public class GetProfileTests : AppFactory
 
     [Fact]
     [UserHandler]
-    public async Task GetProfile()
+    [Endpoint("User/GetProfile")]
+    public void GetProfile()
     {
         var data = new GetProfileQuery();
 
-        await PostJsonAsync(data);
+        PostJson(data);
     }
 }
