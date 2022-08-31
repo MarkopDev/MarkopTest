@@ -204,7 +204,7 @@ namespace MarkopTest.LoadTest
 
         #region Request Methods
 
-          private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
+        private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
             HttpMethod method, TFetchOptions fetchOptions)
         {
             var response = method switch
@@ -484,6 +484,7 @@ namespace MarkopTest.LoadTest
 
             if (TestOptions.OpenResultAfterFinished)
             {
+                // TODO Handle Linux, Mac,... platforms
                 Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
             }
         }
