@@ -151,76 +151,29 @@ namespace MarkopTest.IntegrationTest
             return GetUrl(template, controllerName, testMethod.Name);
         }
 
-        private HttpResponseMessage RequestJson(dynamic data, HttpMethod method,
-            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
-        {
-            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+        #region Json Methods
 
-            return Request(content, method, fetchOptions, handlerOptions);
+        protected HttpResponseMessage PostJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return RequestJson(data, HttpMethod.Post, fetchOptions, handlerOptions);
         }
 
-        private HttpResponseMessage Request(HttpContent content, HttpMethod method,
-            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
+        protected HttpResponseMessage PutJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            var url = GetUrl();
-
-            var testHandlerOptions = handlerOptions ?? new TestHandlerOptions
-            {
-                AfterRequest = true,
-                BeforeRequest = true
-            };
-
-            var client = GetClient();
-
-            var handler = TestHandlerHelper.GetTestHandler(typeof(IntegrationTestFactory<>));
-
-            Exception exception = null;
-            HttpResponseMessage response = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    if (testHandlerOptions.BeforeRequest && handler != null)
-                        handler.BeforeRequest(client).GetAwaiter().GetResult();
-
-                    response = RequestAsync(url, client, content, method, fetchOptions).Result;
-
-                    if (testHandlerOptions.AfterRequest && handler != null)
-                        handler.AfterRequest(client).GetAwaiter().GetResult();
-                }
-                catch (Exception e)
-                {
-                    exception = e;
-                }
-            });
-            thread.Start();
-            thread.Join();
-
-            if (exception != null)
-                throw exception;
-
-            return response;
+            return RequestJson(data, HttpMethod.Put, fetchOptions, handlerOptions);
         }
 
-
-        private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
-            HttpMethod method, TFetchOptions fetchOptions)
+        protected HttpResponseMessage PatchJson(dynamic data,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            var response = method switch
-            {
-                // TODO add delete method
-                HttpMethod.Put => await client.PutAsync(url, content),
-                HttpMethod.Post => await client.PostAsync(url, content),
-                HttpMethod.Patch => await client.PatchAsync(url, content),
-                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
-            };
-
-
-            await PrintOutput(response);
-            Assert.True(await ValidateResponse(response, fetchOptions));
-
-            return response;
+            return RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
         }
+
+        #endregion
+
+        #region Non-Json Methods
 
         protected HttpResponseMessage Get(dynamic data, TFetchOptions fetchOptions = null,
             TestHandlerOptions handlerOptions = null)
@@ -277,22 +230,10 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        protected HttpResponseMessage PostJson(dynamic data,
-            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
-        {
-            return RequestJson(data, HttpMethod.Post, fetchOptions, handlerOptions);
-        }
-
         protected HttpResponseMessage Post(HttpContent content,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
             return Request(content, HttpMethod.Post, fetchOptions, handlerOptions);
-        }
-
-        protected HttpResponseMessage PutJson(dynamic data,
-            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
-        {
-            return RequestJson(data, HttpMethod.Put, fetchOptions, handlerOptions);
         }
 
         protected HttpResponseMessage Put(HttpContent content,
@@ -301,17 +242,89 @@ namespace MarkopTest.IntegrationTest
             return Request(content, HttpMethod.Put, fetchOptions, handlerOptions);
         }
 
-        protected HttpResponseMessage PatchJson(dynamic data,
-            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
-        {
-            return RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
-        }
-
         protected HttpResponseMessage Patch(HttpContent content,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
             return Request(content, HttpMethod.Patch, fetchOptions, handlerOptions);
         }
+
+        #endregion
+
+        #region Request Methods
+
+        private HttpResponseMessage RequestJson(dynamic data, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+
+            return Request(content, method, fetchOptions, handlerOptions);
+        }
+
+        private HttpResponseMessage Request(HttpContent content, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
+        {
+            var url = GetUrl();
+
+            var testHandlerOptions = handlerOptions ?? new TestHandlerOptions
+            {
+                AfterRequest = true,
+                BeforeRequest = true
+            };
+
+            var client = GetClient();
+
+            var handler = TestHandlerHelper.GetTestHandler(typeof(IntegrationTestFactory<>));
+
+            Exception exception = null;
+            HttpResponseMessage response = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    if (testHandlerOptions.BeforeRequest && handler != null)
+                        handler.BeforeRequest(client).GetAwaiter().GetResult();
+
+                    response = RequestAsync(url, client, content, method, fetchOptions).Result;
+
+                    if (testHandlerOptions.AfterRequest && handler != null)
+                        handler.AfterRequest(client).GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+                }
+            });
+            thread.Start();
+            thread.Join();
+
+            if (exception != null)
+                throw exception;
+
+            return response;
+        }
+
+        private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
+            HttpMethod method, TFetchOptions fetchOptions)
+        {
+            var response = method switch
+            {
+                // TODO add delete method
+                HttpMethod.Put => await client.PutAsync(url, content),
+                HttpMethod.Post => await client.PostAsync(url, content),
+                HttpMethod.Patch => await client.PatchAsync(url, content),
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+            };
+
+
+            await PrintOutput(response);
+            Assert.True(await ValidateResponse(response, fetchOptions));
+
+            return response;
+        }
+
+        #endregion
+
+        #region Abstract Methods
 
         protected abstract string GetUrl(string url, string controllerName, string testMethodName);
         protected abstract Task Initializer(IServiceProvider hostServices);
@@ -319,6 +332,8 @@ namespace MarkopTest.IntegrationTest
 
         protected abstract Task<bool> ValidateResponse(HttpResponseMessage httpResponseMessage,
             TFetchOptions fetchOptions);
+
+        #endregion
     }
 
     public abstract class IntegrationTestFactory<TStartup, TFetchOption>

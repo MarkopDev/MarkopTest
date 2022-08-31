@@ -170,14 +170,6 @@ namespace MarkopTest.LoadTest
             RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
         }
 
-        private void RequestJson(dynamic data, HttpMethod method,
-            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
-        {
-            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
-
-            Request(content, method, fetchOptions, handlerOptions);
-        }
-
         #endregion
 
         #region Non-Json Methods
@@ -204,18 +196,12 @@ namespace MarkopTest.LoadTest
 
         #region Request Methods
 
-        private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
-            HttpMethod method, TFetchOptions fetchOptions)
+        private void RequestJson(dynamic data, HttpMethod method,
+            TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
-            var response = method switch
-            {
-                // TODO add delete method
-                HttpMethod.Put => await client.PutAsync(url, content),
-                HttpMethod.Post => await client.PostAsync(url, content),
-                HttpMethod.Patch => await client.PatchAsync(url, content),
-                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
-            };
-            return response;
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+
+            Request(content, method, fetchOptions, handlerOptions);
         }
 
         private void Request(HttpContent content, HttpMethod method,
@@ -487,6 +473,20 @@ namespace MarkopTest.LoadTest
                 // TODO Handle Linux, Mac,... platforms
                 Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
             }
+        }
+
+        private async Task<HttpResponseMessage> RequestAsync(string url, HttpClient client, HttpContent content,
+            HttpMethod method, TFetchOptions fetchOptions)
+        {
+            var response = method switch
+            {
+                // TODO add delete method
+                HttpMethod.Put => await client.PutAsync(url, content),
+                HttpMethod.Post => await client.PostAsync(url, content),
+                HttpMethod.Patch => await client.PatchAsync(url, content),
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+            };
+            return response;
         }
 
         #endregion
