@@ -35,6 +35,7 @@ namespace MarkopTest.LoadTest
     {
         private static IHost _host;
         private IHost _seperatedHost;
+        private readonly string _callerMethodName;
 
         private IServiceProvider _serviceProvider;
         protected readonly TTestOptions TestOptions;
@@ -47,6 +48,7 @@ namespace MarkopTest.LoadTest
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             _outputHelper = outputHelper;
+            _callerMethodName = GetType().Name;
             TestOptions = testOptions ?? new TTestOptions();
         }
 
@@ -118,6 +120,7 @@ namespace MarkopTest.LoadTest
             var testMethod = new StackTrace().GetFrames().FirstOrDefault(frame =>
                     frame.GetMethod()?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)?
                 .GetMethod();
+
 
             var attributeObj = testMethod?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
 
@@ -449,11 +452,14 @@ namespace MarkopTest.LoadTest
                 RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
+            await PersistResults(model);
+        }
 
-            if (Directory.Exists("LoadTestResult"))
-                Directory.Delete("LoadTestResult", true);
+        private async Task PersistResults(ExportResultModel model)
+        {
+            var resultPath = $"LoadTestResult/{_callerMethodName}-{DateTime.Now:yyyy-mm-ddThh-mm-ss}";
 
-            Directory.CreateDirectory("LoadTestResult");
+            Directory.CreateDirectory(resultPath);
 
             static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
             {
@@ -462,16 +468,17 @@ namespace MarkopTest.LoadTest
                 foreach (var fileInfo in source.GetFiles())
                     fileInfo.CopyTo(Path.Combine(target.FullName, fileInfo.Name));
             }
+            
+            CopyFilesRecursively(new DirectoryInfo("Template"),
+                new DirectoryInfo(resultPath));
 
-            CopyFilesRecursively(new DirectoryInfo("Template"), new DirectoryInfo("LoadTestResult"));
-
-            await using var jsFile = File.Create("LoadTestResult/data.js");
+            await using var jsFile = File.Create($"{resultPath}/data.js");
             jsFile.Write(Encoding.UTF8.GetBytes($"var data = JSON.parse('{JsonSerializer.Serialize(model)}');"));
 
             if (TestOptions.OpenResultAfterFinished)
             {
                 // TODO Handle Linux, Mac,... platforms
-                Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath("LoadTestResult/Result.html"));
+                Process.Start(@"cmd.exe", @"/c " + Path.GetFullPath($"{resultPath}/result.html"));
             }
         }
 
