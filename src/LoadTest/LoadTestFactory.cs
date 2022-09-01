@@ -35,7 +35,6 @@ namespace MarkopTest.LoadTest
     {
         private static IHost _host;
         private IHost _seperatedHost;
-        private readonly string _callerMethodName;
 
         private IServiceProvider _serviceProvider;
         protected readonly TTestOptions TestOptions;
@@ -48,7 +47,6 @@ namespace MarkopTest.LoadTest
         protected LoadTestFactory(ITestOutputHelper outputHelper, TTestOptions testOptions = null)
         {
             _outputHelper = outputHelper;
-            _callerMethodName = GetType().Name;
             TestOptions = testOptions ?? new TTestOptions();
         }
 
@@ -121,7 +119,6 @@ namespace MarkopTest.LoadTest
                     frame.GetMethod()?.GetCustomAttributes(typeof(Endpoint), true).Length > 0)?
                 .GetMethod();
 
-
             var attributeObj = testMethod?.GetCustomAttributes(typeof(Endpoint), true).FirstOrDefault();
 
             if (attributeObj == null)
@@ -151,6 +148,16 @@ namespace MarkopTest.LoadTest
                 RegexOptions.IgnoreCase);
 
             return GetUrl(template, controllerName, testMethod.Name);
+        }
+
+        private string GetResultPath()
+        {
+            var type = GetType();
+            var methodName = new StackTrace().GetFrames().LastOrDefault(frame =>
+                frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace == typeof(LoadTestFactory<>).Namespace)
+                ?.GetMethod()?.Name ?? "UnknownMethod";
+            return new StringBuilder().Append("LoadTestResult/").Append(type.Name).Append('/').Append(methodName)
+                .Append('-').Append(DateTime.Now.ToString("yyyy-mm-dd--hh-mm-ss")).ToString();
         }
 
         #region Json Methods
@@ -222,6 +229,8 @@ namespace MarkopTest.LoadTest
 
             var handler = TestHandlerHelper.GetTestHandler(typeof(LoadTestFactory<>));
 
+            var resultPath = GetResultPath();
+
             Exception exception = null;
 
             var thread = new Thread(() =>
@@ -231,7 +240,7 @@ namespace MarkopTest.LoadTest
                     if (testHandlerOptions.BeforeRequest && handler != null)
                         handler.BeforeRequest(client).GetAwaiter().GetResult();
 
-                    PerformLoadRequest(url, client, content, method, fetchOptions).GetAwaiter().GetResult();
+                    PerformLoadRequest(url, client, content, method, fetchOptions, resultPath).GetAwaiter().GetResult();
 
                     if (testHandlerOptions.AfterRequest && handler != null)
                         handler.AfterRequest(client).GetAwaiter().GetResult();
@@ -249,7 +258,7 @@ namespace MarkopTest.LoadTest
         }
 
         private async Task PerformLoadRequest(string url, HttpClient client, HttpContent content,
-            HttpMethod method, TFetchOptions fetchOptions)
+            HttpMethod method, TFetchOptions fetchOptions, string resultPath)
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Production)
                 return;
@@ -452,13 +461,11 @@ namespace MarkopTest.LoadTest
                 RamSize = hardwareInfo.MemoryList.Sum(m => (long)m.Capacity),
                 CpuName = string.Join(", ", hardwareInfo.CpuList.Select(c => c.Name).ToArray()),
             };
-            await PersistResults(model);
+            await PersistResults(model, resultPath);
         }
 
-        private async Task PersistResults(ExportResultModel model)
+        private async Task PersistResults(ExportResultModel model, string resultPath)
         {
-            var resultPath = $"LoadTestResult/{_callerMethodName}-{DateTime.Now:yyyy-mm-ddThh-mm-ss}";
-
             Directory.CreateDirectory(resultPath);
 
             static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
@@ -468,7 +475,7 @@ namespace MarkopTest.LoadTest
                 foreach (var fileInfo in source.GetFiles())
                     fileInfo.CopyTo(Path.Combine(target.FullName, fileInfo.Name));
             }
-            
+
             CopyFilesRecursively(new DirectoryInfo("Template"),
                 new DirectoryInfo(resultPath));
 
