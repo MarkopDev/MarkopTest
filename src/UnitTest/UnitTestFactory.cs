@@ -47,24 +47,25 @@ namespace MarkopTest.UnitTest
             if (!TestOptions.HostSeparation && _host != null)
                 return;
 
-            var hostBuilder = new HostBuilder()
-                .ConfigureWebHost(webHost =>
-                {
-                    webHost.UseTestServer();
-                    webHost.UseStartup<TStartup>();
-                    webHost.UseConfiguration(new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", true)
-                        .Build());
-
-                    webHost.ConfigureTestServices(ConfigureTestServices);
-                });
+            var hostBuilder = CreateHostBuilder();
 
             if (TestOptions.HostSeparation)
                 _seperatedHost = hostBuilder.Start();
             else
                 _host = hostBuilder.Start();
         }
+        private IHostBuilder CreateHostBuilder() => new HostBuilder()
+            .ConfigureWebHost(webHost =>
+            {
+                webHost.UseTestServer();
+                webHost.UseStartup<TStartup>();
+                webHost.UseConfiguration(new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", true)
+                    .Build());
+
+                webHost.ConfigureTestServices(ConfigureTestServices);
+            });
 
         protected abstract void Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);

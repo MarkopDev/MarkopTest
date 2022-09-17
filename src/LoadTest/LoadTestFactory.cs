@@ -13,15 +13,16 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Hardware.Info;
-using MarkopTest.Attributes;
 using MarkopTest.Handler;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit.Abstractions;
+using Endpoint = MarkopTest.Attributes.Endpoint;
 using HttpMethod = MarkopTest.Enums.HttpMethod;
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -154,7 +155,8 @@ namespace MarkopTest.LoadTest
         {
             var type = GetType();
             var methodName = new StackTrace().GetFrames().LastOrDefault(frame =>
-                frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace == typeof(LoadTestFactory<>).Namespace)
+                    frame.GetMethod()?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+                    typeof(LoadTestFactory<>).Namespace)
                 ?.GetMethod()?.Name ?? "UnknownMethod";
             return new StringBuilder().Append("LoadTestResult/").Append(type.Name).Append('/').Append(methodName)
                 .Append('-').Append(DateTime.Now.ToString("yyyy-mm-dd--hh-mm-ss")).ToString();
@@ -262,96 +264,13 @@ namespace MarkopTest.LoadTest
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Production)
                 return;
-            var tasks = new List<Task>();
-            var syncMemorySamples = new ConcurrentDictionary<int, long>();
-            var asyncMemorySamples = new ConcurrentDictionary<int, long>();
-            var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
-            var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
 
-            for (var i = 0; i < TestOptions.SyncRequestCount; i++)
-            {
-                var beforeRequestMemory = Process.GetCurrentProcess().PrivateMemorySize64;
+            var (syncMemorySamples, syncRequestInfos) =
+                await PerformSyncRequests(url, client, content, method, fetchOptions);
+            var (asyncMemorySamples, asyncRequestInfos) =
+                await PerformAsyncRequests(url, client, content, method, fetchOptions);
 
-                var sw = Stopwatch.StartNew();
-
-                HttpResponseMessage response = null;
-
-                try
-                {
-                    response = await RequestAsync(url, client, content, method, fetchOptions);
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-
-                sw.Stop();
-
-                var memorySize = Process.GetCurrentProcess().PrivateMemorySize64 - beforeRequestMemory;
-
-                if (memorySize < 0)
-                    memorySize = 0;
-
-                while (!syncMemorySamples.TryAdd(i, memorySize))
-                {
-                    Thread.Sleep(100);
-                }
-
-                var requestInfo = new RequestInfo
-                {
-                    ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
-                    ResponseTime = sw.ElapsedMilliseconds
-                };
-
-                while (!syncRequestInfos.TryAdd(i, requestInfo))
-                {
-                    Thread.Sleep(100);
-                }
-            }
-
-            for (var i = 0; i < TestOptions.AsyncRequestCount; i++)
-            {
-                var i1 = i;
-                tasks.Add(await Task.Run<Task>(async () =>
-                {
-                    var sw = Stopwatch.StartNew();
-
-                    HttpResponseMessage response = null;
-
-                    try
-                    {
-                        response = await RequestAsync(url, client, content, method, fetchOptions);
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
-
-                    sw.Stop();
-
-                    while (!asyncMemorySamples.TryAdd(i1, Process.GetCurrentProcess().PrivateMemorySize64))
-                    {
-                        Thread.Sleep(100);
-                    }
-
-                    var requestInfo = new RequestInfo
-                    {
-                        ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
-                        ResponseTime = sw.ElapsedMilliseconds
-                    };
-
-                    while (!asyncRequestInfos.TryAdd(i1, requestInfo))
-                    {
-                        Thread.Sleep(100);
-                    }
-                }));
-            }
-
-            await Task.WhenAll(tasks);
-
-            var minAsyncMemoryTrend = asyncMemorySamples.Values.Min();
-            var asyncMemoryTrend = asyncMemorySamples.Values.Select(v => v - minAsyncMemoryTrend).ToArray();
-
+            var asyncMemoryTrend = GetAsyncMemoryTrend(asyncMemorySamples.Values);
             var syncMemoryTrend = syncMemorySamples.Values.ToArray();
 
             var syncRequestResponseTimes = syncRequestInfos.Values.Select(v => v.ResponseTime).ToArray();
@@ -360,36 +279,17 @@ namespace MarkopTest.LoadTest
             var syncAverage = syncRequestResponseTimes.Sum() / syncRequestResponseTimes.Count();
             var asyncAverage = asyncRequestResponseTimes.Sum() / asyncRequestResponseTimes.Count();
 
-            _outputHelper.WriteLine(new string('-', 20));
-            _outputHelper.WriteLine($"Sync Min: {syncRequestResponseTimes.Min(t => t) / 1000.0} sec");
-            _outputHelper.WriteLine($"Sync Average: {syncAverage / 1000.0} sec");
-            _outputHelper.WriteLine($"Sync Max: {syncRequestResponseTimes.Max(t => t) / 1000.0} sec");
-            _outputHelper.WriteLine($"Async Min: {asyncRequestResponseTimes.Min(t => t) / 1000.0} sec");
-            _outputHelper.WriteLine($"Async Average: {asyncAverage / 1000.0} sec");
-            _outputHelper.WriteLine($"Async Max: {asyncRequestResponseTimes.Max(t => t) / 1000.0} sec");
+            WriteOutputResults("Sync", syncRequestResponseTimes, syncAverage);
+            WriteOutputResults("Async", asyncRequestResponseTimes, asyncAverage);
 
             var syncTimesIterationArray = syncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
             var asyncTimesIterationArray = asyncRequestResponseTimes.Select((l, i) => new[] { i, l }).ToArray();
 
-            var syncTimesDistributionArray = syncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] { group.Key, group.Count() }; })
-                .OrderBy(x => x[1]).ToArray();
-            var asyncTimesDistributionArray = asyncRequestResponseTimes.GroupBy(value => value)
-                .Select(group => { return new[] { group.Key, group.Count() }; })
-                .OrderBy(x => x[1]).ToArray();
+            var syncTimesDistributionArray = GetTimeDistribution(syncRequestResponseTimes);
+            var asyncTimesDistributionArray = GetTimeDistribution(asyncRequestResponseTimes);
 
-            var syncResponseStatus = syncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
-                .Select(group => new ResponseStatusResult
-                {
-                    Status = group.Key.ToString(),
-                    Count = group.Count()
-                }).ToArray();
-            var asyncResponseStatus = asyncRequestInfos.Values.GroupBy(value => value.ResponseStatus)
-                .Select(group => new ResponseStatusResult
-                {
-                    Status = group.Key.ToString(),
-                    Count = group.Count()
-                }).ToArray();
+            var syncResponseStatus = GetResponseStatusResults(syncRequestInfos.Values);
+            var asyncResponseStatus = GetResponseStatusResults(asyncRequestInfos.Values);
 
 
             ResponseTimeSummaryResult[] GetTimeSummaryRange(IReadOnlyCollection<long> summaryData, int rangeCount)
@@ -463,6 +363,134 @@ namespace MarkopTest.LoadTest
             };
             await PersistResults(model, resultPath);
         }
+
+        private async Task<(ConcurrentDictionary<int, long>, ConcurrentDictionary<int, RequestInfo>)>
+            PerformSyncRequests(string url, HttpClient client, HttpContent content, HttpMethod method,
+                TFetchOptions fetchOptions)
+        {
+            var syncMemorySamples = new ConcurrentDictionary<int, long>();
+            var syncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
+
+            for (var requestIndex = 0; requestIndex < TestOptions.SyncRequestCount; requestIndex++)
+            {
+                var beforeRequestMemory = Process.GetCurrentProcess().PrivateMemorySize64;
+
+                var (response, elapsedTime) =
+                    await ReallyMakeRequest(url, client, content, method, fetchOptions);
+
+                var memorySize = CalculateUsedMemorySize(beforeRequestMemory);
+
+                while (!syncMemorySamples.TryAdd(requestIndex, memorySize))
+                {
+                    Thread.Sleep(100);
+                }
+
+                var requestInfo = new RequestInfo
+                {
+                    ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
+                    ResponseTime = elapsedTime
+                };
+
+                while (!syncRequestInfos.TryAdd(requestIndex, requestInfo))
+                {
+                    Thread.Sleep(100);
+                }
+            }
+
+            return (syncMemorySamples, syncRequestInfos);
+        }
+
+        private async Task<(ConcurrentDictionary<int, long>, ConcurrentDictionary<int, RequestInfo>)>
+            PerformAsyncRequests(string url, HttpClient client, HttpContent content, HttpMethod method,
+                TFetchOptions fetchOptions)
+        {
+            var tasks = new List<Task>();
+            var asyncMemorySamples = new ConcurrentDictionary<int, long>();
+            var asyncRequestInfos = new ConcurrentDictionary<int, RequestInfo>();
+
+            for (var requestIndex = 0; requestIndex < TestOptions.AsyncRequestCount; requestIndex++)
+            {
+                var i1 = requestIndex;
+                tasks.Add(await Task.Run<Task>(async () =>
+                {
+                    var (response, elapsedTime) =
+                        await ReallyMakeRequest(url, client, content, method, fetchOptions);
+
+                    while (!asyncMemorySamples.TryAdd(i1, Process.GetCurrentProcess().PrivateMemorySize64))
+                    {
+                        Thread.Sleep(100);
+                    }
+
+                    var requestInfo = new RequestInfo
+                    {
+                        ResponseStatus = response?.StatusCode ?? HttpStatusCode.InternalServerError,
+                        ResponseTime = elapsedTime
+                    };
+
+                    while (!asyncRequestInfos.TryAdd(i1, requestInfo))
+                    {
+                        Thread.Sleep(100);
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+
+            return (asyncMemorySamples, asyncRequestInfos);
+        }
+
+        private long CalculateUsedMemorySize(long beforeRequestMemory)
+        {
+            var memorySize = Process.GetCurrentProcess().PrivateMemorySize64 - beforeRequestMemory;
+
+            if (memorySize < 0)
+                memorySize = 0;
+            return memorySize;
+        }
+
+        private async Task<(HttpResponseMessage response, long ElapsedMilliseconds)> ReallyMakeRequest(string url,
+            HttpClient client, HttpContent content, HttpMethod method, TFetchOptions fetchOptions)
+        {
+            var sw = Stopwatch.StartNew();
+
+            HttpResponseMessage response = null;
+
+            try
+            {
+                response = await RequestAsync(url, client, content, method, fetchOptions);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            sw.Stop();
+            return (response, sw.ElapsedMilliseconds);
+        }
+
+        private long[] GetAsyncMemoryTrend(ICollection<long> asyncMemorySamples)
+        {
+            var minAsyncMemoryTrend = asyncMemorySamples.Min();
+            return asyncMemorySamples.Select(v => v - minAsyncMemoryTrend).ToArray();
+        }
+
+        private void WriteOutputResults(string title, long[] requestResponseTimes, long averageTime)
+        {
+            _outputHelper.WriteLine(new string('-', 20));
+            _outputHelper.WriteLine($"{title} Min: {requestResponseTimes.Min(t => t) / 1000.0} sec");
+            _outputHelper.WriteLine($"{title}Average: {averageTime / 1000.0} sec");
+            _outputHelper.WriteLine($"{title} Max: {requestResponseTimes.Max(t => t) / 1000.0} sec");
+        }
+
+        private long[][] GetTimeDistribution(long[] requestResponseTimes) => requestResponseTimes
+            .GroupBy(value => value)
+            .Select(group => { return new[] { group.Key, group.Count() }; })
+            .OrderBy(x => x[1]).ToArray();
+
+        private ResponseStatusResult[] GetResponseStatusResults(ICollection<RequestInfo> requestInfos) => requestInfos
+            .GroupBy(value => value.ResponseStatus).Select(group => new ResponseStatusResult
+                { Status = group.Key.ToString(), Count = group.Count() }).ToArray();
+
 
         private async Task PersistResults(ExportResultModel model, string resultPath)
         {

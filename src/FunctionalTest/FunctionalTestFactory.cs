@@ -36,6 +36,15 @@ namespace MarkopTest.FunctionalTest
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
 
+        protected HttpClient GetClient()
+        {
+            InitializeHost();
+
+            _initializationTask.Wait(-1);
+
+            return Host.GetTestClient();
+        }
+
         private async void InitializeHost()
         {
             // Prevent call this method twice concurrently
@@ -60,18 +69,7 @@ namespace MarkopTest.FunctionalTest
             if (!TestOptions.HostSeparation && _host != null)
                 return;
 
-            var hostBuilder = new HostBuilder()
-                .ConfigureWebHost(webHost =>
-                {
-                    webHost.UseTestServer();
-                    webHost.UseStartup<TStartup>();
-                    webHost.UseConfiguration(new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", true)
-                        .Build());
-
-                    webHost.ConfigureTestServices(ConfigureTestServices);
-                });
+            var hostBuilder = CreateHostBuilder();
 
             if (TestOptions.HostSeparation)
                 _seperatedHost = await hostBuilder.StartAsync();
@@ -79,14 +77,18 @@ namespace MarkopTest.FunctionalTest
                 _host = await hostBuilder.StartAsync();
         }
 
-        protected HttpClient GetClient()
-        {
-            InitializeHost();
+        private IHostBuilder CreateHostBuilder() => new HostBuilder()
+            .ConfigureWebHost(webHost =>
+            {
+                webHost.UseTestServer();
+                webHost.UseStartup<TStartup>();
+                webHost.UseConfiguration(new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", true)
+                    .Build());
 
-            _initializationTask.Wait(-1);
-
-            return Host.GetTestClient();
-        }
+                webHost.ConfigureTestServices(ConfigureTestServices);
+            });
 
         protected abstract Task Initializer(IServiceProvider hostServices);
         protected abstract void ConfigureTestServices(IServiceCollection services);

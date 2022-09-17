@@ -9,9 +9,7 @@ namespace MarkopTest.Handler
     {
         internal static TestHandler GetTestHandler(Type type)
         {
-            if (new StackTrace().GetFrames().Any(frame =>
-                    frame.GetMethod()?.DeclaringType?.DeclaringType?.BaseType?.BaseType?.Namespace ==
-                    typeof(FunctionalTestFactory<>).Namespace))
+            if (IsFunctionalTest())
                 return null;
 
             var stackFrame = new StackTrace().GetFrames().LastOrDefault(frame =>
@@ -23,7 +21,11 @@ namespace MarkopTest.Handler
                 return null;
 
             // TODO multiple handler because the attribute can use multiple time
-            return (TestHandler) Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
+            return (TestHandler)Attribute.GetCustomAttribute(methodBase, typeof(TestHandler));
         }
+
+        private static bool IsFunctionalTest() => new StackTrace().GetFrames().Any(frame =>
+            frame.GetMethod()?.DeclaringType?.DeclaringType?.BaseType?.BaseType?.Namespace ==
+            typeof(FunctionalTestFactory<>).Namespace);
     }
 }
