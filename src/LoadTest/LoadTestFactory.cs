@@ -16,7 +16,6 @@ using Hardware.Info;
 using MarkopTest.Handler;
 using MarkopTest.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,7 +52,7 @@ namespace MarkopTest.LoadTest
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
 
-        private async void InitializeHost()
+        private async Task InitializeHost()
         {
             // Prevent call this method twice concurrently
             await _semaphore.WaitAsync();

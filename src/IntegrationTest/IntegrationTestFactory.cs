@@ -50,7 +50,7 @@ namespace MarkopTest.IntegrationTest
 
         private IHost Host => TestOptions.HostSeparation ? _seperatedHost : _host;
 
-        private async void InitializeHost()
+        private async Task InitializeHost()
         {
             // Prevent call this method twice concurrently
             await _semaphore.WaitAsync();
