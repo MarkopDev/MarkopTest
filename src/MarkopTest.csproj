@@ -12,22 +12,26 @@
         <RepositoryUrl>https://github.com/MarkopDev/MarkopTest</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>UnitTest, LoadTest, StressTest, IntegrationTest, FunctionalTest, xUnit, Report, HTML, Chart</PackageTags>
-        <AssemblyVersion>2.1.0</AssemblyVersion>
-        <FileVersion>2.1.0</FileVersion>
-        <PackageVersion>2.1.0</PackageVersion>
+        <AssemblyVersion>2.1.1</AssemblyVersion>
+        <FileVersion>2.1.1</FileVersion>
+        <PackageVersion>2.1.1</PackageVersion>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-        <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
+        <TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hardware.Info" Version="1.1.1.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="Hardware.Info" Version="10.1.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
     </ItemGroup>
 
+    <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.14" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
@@ -35,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.28" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.32" />
     </ItemGroup>
 
     <ItemGroup>

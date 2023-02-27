@@ -26,13 +26,13 @@ public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, GetProfil
         HttpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<GetProfileViewModel> Handle(GetProfileQuery request, CancellationToken cancellationToken)
+    public Task<GetProfileViewModel> Handle(GetProfileQuery request, CancellationToken cancellationToken)
     {
         var user = HttpContextAccessor.GetUser();
 
-        return new GetProfileViewModel
+        return Task.FromResult(new GetProfileViewModel
         {
             Profile = Mapper.Map<ProfileDto>(user)
-        };
+        });
     }
 }
