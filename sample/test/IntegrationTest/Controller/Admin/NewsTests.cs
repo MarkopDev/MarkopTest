@@ -30,7 +30,7 @@ public class NewsTests : AppFactory
             Title = title
         };
 
-        var response = PostJson(data, new FetchOptions
+        var response = PutJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -51,7 +51,7 @@ public class NewsTests : AppFactory
             NewsId = newsId
         };
 
-        PostJson(data, new FetchOptions
+        Delete(data, new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -76,7 +76,7 @@ public class NewsTests : AppFactory
             IsHidden = isHidden
         };
 
-        var response = PostJson(data, new FetchOptions
+        var response = PatchJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });

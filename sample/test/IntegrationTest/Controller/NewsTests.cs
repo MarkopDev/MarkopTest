@@ -38,7 +38,7 @@ public class NewsTests : AppFactory
             PageNumber = pageNumber,
         };
 
-        var response =  PostJson(data, new FetchOptions
+        var response =  PostJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -65,7 +65,7 @@ public class NewsTests : AppFactory
             PageNumber = pageNumber,
         };
 
-        var response =  PostJson(data, new FetchOptions
+        var response =  PostJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -86,7 +86,7 @@ public class NewsTests : AppFactory
             NewsId = newsId
         };
 
-        var response =  PostJson(data, new FetchOptions
+        var response =  PostJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });

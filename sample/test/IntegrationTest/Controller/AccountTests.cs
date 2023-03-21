@@ -34,7 +34,7 @@ public class AccountTests : AppFactory
             Password = password
         };
 
-        PostJson(data, new FetchOptions
+        PostJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });
@@ -47,12 +47,12 @@ public class AccountTests : AppFactory
     {
         var data = new SignOutCommand();
 
-        PatchJson(data, new FetchOptions
+        Get(data, new FetchOptions
         {
             ErrorCode = errorCode
         });
 
-        PatchJson(data,
+        Get(data,
             new FetchOptions
             {
                 ErrorCode = null,
@@ -86,7 +86,7 @@ public class AccountTests : AppFactory
             Platform = platform
         };
 
-        PostJson(data, new FetchOptions
+        PostJson(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });

@@ -25,7 +25,7 @@ public class UserTests : AppFactory
     {
         var data = new GetProfileQuery();
 
-        var response =  PostJson(data, new FetchOptions
+        var response =  Get(data, fetchOptions: new FetchOptions
         {
             ErrorCode = errorCode
         });

@@ -16,10 +16,10 @@ public class UserController : ControllerBase
     {
     }
         
-    [HttpPost]
+    [HttpGet]
     [ProducesResponseType(typeof(GetProfileViewModel), 200)]
-    public async Task<IActionResult> GetProfile(GetProfileQuery request)
+    public async Task<IActionResult> GetProfile()
     {
-        return Ok(await Mediator.Send(request));
+        return Ok(await Mediator.Send(new GetProfileQuery()));
     }
 }

@@ -33,10 +33,10 @@ public class AccountController : ControllerBase
         return Ok(await Mediator.Send(request));
     }
 
-    [HttpPatch]
-    public async Task<IActionResult> SignOut(SignOutCommand request)
+    [HttpGet]
+    public async Task<IActionResult> SignOut()
     {
-        await Mediator.Send(request);
+        await Mediator.Send(new SignOutCommand());
         return Ok();
     }
 }

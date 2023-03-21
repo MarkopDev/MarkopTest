@@ -9,6 +9,19 @@ namespace MarkopTest
 {
     public static class Extensions
     {
+        public static string GetUrlWithQuery(string url, dynamic query)
+        {
+            if (query == null)
+                return url;
+            var result = url + "?";
+            var properties = query.GetType().GetProperties();
+            foreach (var p in properties)
+            {
+                var value = p.GetValue(query, null);
+                result += p.Name + "=" + (value?.ToString() ?? "null") + "&";
+            }
+            return result.TrimEnd('&');
+        }
         public static async Task<string> GetContent(this HttpResponseMessage message)
         {
             var content = Regex.Replace(

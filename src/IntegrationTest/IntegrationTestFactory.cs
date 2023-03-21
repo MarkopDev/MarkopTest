@@ -153,29 +153,29 @@ namespace MarkopTest.IntegrationTest
 
         #region Json Methods
 
-        protected HttpResponseMessage PostJson(dynamic data,
+        protected HttpResponseMessage PostJson(dynamic body, dynamic query = null,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return RequestJson(data, HttpMethod.Post, fetchOptions, handlerOptions);
+            return RequestJson(body, query, HttpMethod.Post, fetchOptions, handlerOptions);
         }
 
-        protected HttpResponseMessage PutJson(dynamic data,
+        protected HttpResponseMessage PutJson(dynamic body, dynamic query = null,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return RequestJson(data, HttpMethod.Put, fetchOptions, handlerOptions);
+            return RequestJson(body, query, HttpMethod.Put, fetchOptions, handlerOptions);
         }
 
-        protected HttpResponseMessage PatchJson(dynamic data,
+        protected HttpResponseMessage PatchJson(dynamic body, dynamic query = null,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return RequestJson(data, HttpMethod.Patch, fetchOptions, handlerOptions);
+            return RequestJson(body, query, HttpMethod.Patch, fetchOptions, handlerOptions);
         }
 
         #endregion
 
         #region Non-Json Methods
 
-        protected HttpResponseMessage Get(dynamic data, TFetchOptions fetchOptions = null,
+        protected HttpResponseMessage Get(dynamic query, TFetchOptions fetchOptions = null,
             TestHandlerOptions handlerOptions = null)
         {
             var url = GetUrl();
@@ -196,7 +196,7 @@ namespace MarkopTest.IntegrationTest
                 if (testHandlerOptions.BeforeRequest && handler != null)
                     handler.BeforeRequest(client).GetAwaiter().GetResult();
 
-                response = GetAsync(url, client, data, fetchOptions).Result;
+                response = GetAsync(url, client, query, fetchOptions).Result;
 
                 if (testHandlerOptions.AfterRequest && handler != null)
                     handler.AfterRequest(client).GetAwaiter().GetResult();
@@ -207,21 +207,10 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        private async Task<HttpResponseMessage> GetAsync(string url, HttpClient client, dynamic data,
+        private async Task<HttpResponseMessage> GetAsync(string url, HttpClient client, dynamic query,
             TFetchOptions fetchOptions)
         {
-            var properties = data.GetType().GetProperties();
-            foreach (var p in properties)
-            {
-                var value = p.GetValue(data, null);
-                if (value != null && p.Name != null && p.Name.Length >= 1)
-                {
-                    url += "?" + p.Name.Substring(0, 1).ToString().ToLower() + p.Name.Substring(1) + "=" +
-                           (string)value;
-                }
-            }
-
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync(Extensions.GetUrlWithQuery(url, query));
 
             await PrintOutput(response);
 
@@ -230,40 +219,45 @@ namespace MarkopTest.IntegrationTest
             return response;
         }
 
-        protected HttpResponseMessage Post(HttpContent content,
+        protected HttpResponseMessage Post(dynamic query = null, HttpContent content = null,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return Request(content, HttpMethod.Post, fetchOptions, handlerOptions);
+            return Request(query, content, HttpMethod.Post, fetchOptions, handlerOptions);
         }
 
-        protected HttpResponseMessage Put(HttpContent content,
-            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        protected HttpResponseMessage Delete(dynamic query = null, TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return Request(content, HttpMethod.Put, fetchOptions, handlerOptions);
+            return Request(query, null, HttpMethod.Delete, fetchOptions, handlerOptions);
         }
 
-        protected HttpResponseMessage Patch(HttpContent content,
+        protected HttpResponseMessage Put(dynamic query = null, HttpContent content = null,
             TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
         {
-            return Request(content, HttpMethod.Patch, fetchOptions, handlerOptions);
+            return Request(query, content, HttpMethod.Put, fetchOptions, handlerOptions);
+        }
+
+        protected HttpResponseMessage Patch(dynamic query = null, HttpContent content = null,
+            TFetchOptions fetchOptions = null, TestHandlerOptions handlerOptions = null)
+        {
+            return Request(query, content, HttpMethod.Patch, fetchOptions, handlerOptions);
         }
 
         #endregion
 
         #region Request Methods
 
-        private HttpResponseMessage RequestJson(dynamic data, HttpMethod method,
+        private HttpResponseMessage RequestJson(dynamic body, dynamic query, HttpMethod method,
             TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
-            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.Default, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(body), Encoding.Default, "application/json");
 
-            return Request(content, method, fetchOptions, handlerOptions);
+            return Request(query, content, method, fetchOptions, handlerOptions);
         }
 
-        private HttpResponseMessage Request(HttpContent content, HttpMethod method,
+        private HttpResponseMessage Request(dynamic query, HttpContent content, HttpMethod method,
             TFetchOptions fetchOptions, TestHandlerOptions handlerOptions)
         {
-            var url = GetUrl();
+            var url = Extensions.GetUrlWithQuery(GetUrl(), query);
 
             var testHandlerOptions = handlerOptions ?? new TestHandlerOptions
             {
@@ -308,7 +302,7 @@ namespace MarkopTest.IntegrationTest
         {
             var response = method switch
             {
-                // TODO add delete method
+                HttpMethod.Delete => await client.DeleteAsync(url),
                 HttpMethod.Put => await client.PutAsync(url, content),
                 HttpMethod.Post => await client.PostAsync(url, content),
                 HttpMethod.Patch => await client.PatchAsync(url, content),

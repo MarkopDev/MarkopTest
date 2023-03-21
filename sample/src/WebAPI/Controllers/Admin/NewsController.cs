@@ -18,23 +18,23 @@ public class NewsController : ControllerBase
     {
     }
 
-    [HttpPost]
+    [HttpPatch]
     [ProducesResponseType(typeof(EditNewsViewModel), 200)]
     public async Task<IActionResult> EditNews(EditNewsCommand request)
     {
         return Ok(await Mediator.Send(request));
     }
 
-    [HttpPost]
+    [HttpPut]
     [ProducesResponseType(typeof(CreateNewsViewModel), 200)]
     public async Task<IActionResult> CreateNews(CreateNewsCommand request)
     {
         return Ok(await Mediator.Send(request));
     }
 
-    [HttpPost]
-    public async Task<IActionResult> DeleteNews(DeleteNewsCommand request)
+    [HttpDelete]
+    public async Task<IActionResult> DeleteNews([FromQuery] int newsId)
     {
-        return Ok(await Mediator.Send(request));
+        return Ok(await Mediator.Send(new DeleteNewsCommand { NewsId = newsId }));
     }
 }
