@@ -10,8 +10,7 @@ namespace WebAPI.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public class AccountController : ControllerBase
 {
     public AccountController(IMediator mediator) : base(mediator)

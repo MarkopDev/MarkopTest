@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Infrastructure.Persistence;
-using Xunit;
+using MarkopTest.Attributes;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 

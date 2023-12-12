@@ -21,7 +21,7 @@ public class NewsTests : AppFactory
     {
     }
     
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(1, 5, "")]
     [InlineData(1, 5, "new")]
@@ -48,7 +48,7 @@ public class NewsTests : AppFactory
             : null;
     }
     
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(1, 5, "")]
     [InlineData(1, 5, "new")]
@@ -75,7 +75,7 @@ public class NewsTests : AppFactory
             : null;
     }
     
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(1)]
     [InlineData(-1, ErrorCode.InvalidInput)]

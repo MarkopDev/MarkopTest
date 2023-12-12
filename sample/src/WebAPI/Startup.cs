@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Application;
 using Domain.Entities;
@@ -12,8 +11,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -82,22 +79,6 @@ public class Startup
             option.AddPolicy("UserPolicy", policy =>
                 policy.AddRequirements(new AuthorizationRequirements(new List<string> {"User"})));
         });
-
-        #endregion
-
-        #region API Versioning
-
-        services.AddVersionedApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
-        });
-
-        services.AddApiVersioning(config => { config.ReportApiVersions = true; });
-
-        services.Remove(services.First(service =>
-            service.ImplementationType == typeof(ApiVersionMatcherPolicy)));
-        services.AddSingleton<MatcherPolicy, ApiVersionMatcherPolicy>();
 
         #endregion
     }

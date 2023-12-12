@@ -10,7 +10,7 @@ public class EmailNormalizeTests : AppFactory
     {
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [InlineData("t.test@gmail.com", "ttest@gmail.com")]
     public void EmailNormalize(string input, string expectedOutput)
     {

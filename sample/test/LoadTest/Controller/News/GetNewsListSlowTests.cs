@@ -12,7 +12,7 @@ public class GetNewsListSlowTests : AppFactory
     {
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(1, 100)]
     [Endpoint("News/GetNewsList")]

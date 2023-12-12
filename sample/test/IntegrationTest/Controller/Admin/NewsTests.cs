@@ -19,7 +19,7 @@ public class NewsTests : AppFactory
     {
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [OwnerHandler]
     [InlineData("New Title")]
     [InlineData(null, ErrorCode.InvalidInput)]
@@ -40,7 +40,7 @@ public class NewsTests : AppFactory
             : null;
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [OwnerHandler]
     [InlineData(2)]
     [InlineData(-1, ErrorCode.InvalidInput)]
@@ -57,7 +57,7 @@ public class NewsTests : AppFactory
         });
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [OwnerHandler]
     [InlineData(1, "Edited Title", "Edited Content", "Preview Edited", false)]
     [InlineData(1, "Edited Title", null, "Preview Edited", false, ErrorCode.InvalidInput)]

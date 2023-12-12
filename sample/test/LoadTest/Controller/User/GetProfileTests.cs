@@ -1,7 +1,6 @@
 ﻿using Application.Features.User.Queries.GetProfile;
 using IntegrationTest.Handlers;
 using MarkopTest.Attributes;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace LoadTest.Controller.User;

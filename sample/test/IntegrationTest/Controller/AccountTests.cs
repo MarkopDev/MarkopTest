@@ -19,7 +19,7 @@ public class AccountTests : AppFactory
     {
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [InlineData("TestUser@Markop.com", LoginType.Email, "TestPassword")]
     [InlineData(null, LoginType.Email, "TestPassword1", ErrorCode.InvalidInput)]
     [InlineData("TestUser@Markop.com", LoginType.Email, null, ErrorCode.InvalidInput)]
@@ -40,7 +40,7 @@ public class AccountTests : AppFactory
         });
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(null)]
     public void SignOut(ErrorCode? errorCode = null)
@@ -64,7 +64,7 @@ public class AccountTests : AppFactory
             });
     }
 
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [InlineData("0098 12345678", "TestPassword", "Test", "Test")]
     [InlineData(null, "TestPassword", "Test", "Test", "Web Test", ErrorCode.InvalidInput)]
     [InlineData("0098 12345678", null, "Test", "Test", "Web Test", ErrorCode.InvalidInput)]

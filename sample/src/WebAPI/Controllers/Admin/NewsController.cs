@@ -9,9 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace WebAPI.Controllers.Admin;
 
 [ApiController]
-[ApiVersion("1.0")]
 [Authorize(Policy = "AdminOwnerPolicy")]
-[Route("api/v{version:apiVersion}/Admin/[controller]/[action]")]
+[Route("api/Admin/[controller]/[action]")]
 public class NewsController : ControllerBase
 {
     public NewsController(IMediator mediator) : base(mediator)

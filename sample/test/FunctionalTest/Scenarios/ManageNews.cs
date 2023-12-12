@@ -13,7 +13,7 @@ public class ManageNews : AppFactory
     {
     }
 
-    [Fact]
+    [MarkopTest.Attributes.Fact]
     public async Task ManageNewsTest()
     {
         var userClient = await GetClient().User();

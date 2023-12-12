@@ -2,5 +2,5 @@
 
 public static class APIs
 {
-    public static string V1 => "api/v1.0/";
+    public static string V1 => "api/";
 }

@@ -18,7 +18,7 @@ public class UserTests : AppFactory
     {
     }
     
-    [Theory]
+    [MarkopTest.Attributes.Theory]
     [UserHandler]
     [InlineData(null)]
     public async Task<ProfileDto> GetProfile(ErrorCode? errorCode = null)
@@ -36,7 +36,7 @@ public class UserTests : AppFactory
     }
 
     [Endpoint("[controller]/GetProfile")]
-    [Fact]
+    [MarkopTest.Attributes.Fact]
     public async Task GetProfile_UnauthorizedUser()
     {
         await GetProfile(ErrorCode.Unauthorized);
