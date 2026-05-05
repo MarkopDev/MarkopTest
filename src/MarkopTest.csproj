@@ -12,10 +12,11 @@
         <RepositoryUrl>https://github.com/MarkopDev/MarkopTest</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>UnitTest, LoadTest, StressTest, IntegrationTest, FunctionalTest, xUnit, Report, HTML, Chart</PackageTags>
-        <AssemblyVersion>2.2.1</AssemblyVersion>
-        <FileVersion>2.2.1</FileVersion>
-        <PackageVersion>2.2.1</PackageVersion>
+        <AssemblyVersion>3.0.0</AssemblyVersion>
+        <FileVersion>3.0.0</FileVersion>
+        <PackageVersion>3.0.0</PackageVersion>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
     </PropertyGroup>
@@ -64,6 +65,10 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Include="..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+        <None Include="..\README.md">
             <Pack>True</Pack>
             <PackagePath></PackagePath>
         </None>
