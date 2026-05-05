@@ -1,130 +1,129 @@
-﻿<h1 align="center">Markop Test</h1>
-<h6 align="center">
+﻿# Markop Test
 
 [![NuGet](http://img.shields.io/nuget/v/MarkopTest.svg?label=NuGet)](https://www.nuget.org/packages/MarkopTest/)
-[![Nuget](https://img.shields.io/nuget/dt/MarkopTest.svg)](https://nuget.org/packages/MarkopTest)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MarkopTest.svg)](https://nuget.org/packages/MarkopTest)
 [![MIT License](https://img.shields.io/github/license/MarkopDev/MarkopTest.svg?color=yellow)](https://github.com/MarkopDev/MarkopTest/LICENSE.txt)
 [![GitHub stars](https://img.shields.io/github/stars/MarkopDev/MarkopTest.svg?color=red)](https://github.com/MarkopDev/MarkopTest/stargazers)
 
-</h6>
+Markop Test is an open-source testing toolkit for ASP.NET applications. It provides reusable factories to build **unit**, **integration**, **functional**, and **load** tests on top of xUnit with minimal boilerplate.
 
-Markop Test is a free, open-source, focused testing tool for **.Net**. Using Markop Tests you can easily write **Unit tests**, **Integration tests**, **Functional tests** and **Load** tests.
+## Why Markop Test
 
-## Getting Started
+- Reduces setup code for web-hosted tests
+- Supports endpoint-oriented integration testing
+- Enables scenario-style functional tests
+- Generates HTML reports for load testing
+- Integrates with standard xUnit workflows
 
-In order to use Markop test you should do the following steps:
+## Supported Frameworks
 
-1- Create a class library project inside your solution and name it according to the kind of test you want to perform, e.g., "FunctionalTest". Don't forget to add the project to your solution.<br/>
-<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="dotnet new classlib -n [YOUR PROJECT NAME]">
-    <pre class="notranslate"><code>dotnet new classlib -n [YOUR PROJECT NAME]</code></pre>
-</div>
-<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="dotnet sln add [YOUR PROJECT NAME]">
-    <pre class="notranslate"><code>dotnet sln add [YOUR PROJECT NAME]</code></pre>
-</div>
-2- Inside the newly created project add a reference to the project you want to test<br/>
+Markop Test currently targets:
 
-3- Install the Markop Test package inside your test project:<br/>
- <p>Nuget:</p>
-<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="Install-Package MarkopTest">
-    <pre class="notranslate"><code>Install-Package MarkopTest</code></pre>
-</div>
-<p> Or using dotnet CLI:</p>
-<div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="dotnet add package MarkopTest">
-    <pre class="notranslate"><code>dotnet add package MarkopTest</code></pre>
-</div>
+- `.NET 8`
+- `.NET 9`
+- `.NET 10`
 
-4- Depending on the kind of testing you want to perform you should go to: [Unit test](#unit-test)
-, [Integration test](#integration-test),
-[Functional test](#functional-test) or [Load test](#load-test).
+## Installation
 
-## Unit Test
+Install from NuGet in your test project:
 
-<p> Unit Tests are supposed to test the behaviour of a smallest piece of code. Markop Test is here to make this process fully automated. Writing Unit Tests has never been easier before!!</p>
+```powershell
+Install-Package MarkopTest
+```
 
-### Usage
-<p>First of all you should create an <code>AppFactory</code> class extend it from <code>UnitTestFactory</code> class.</p>
-<p>Then you need to override <code>Initializer</code> and <code>ConfigureTestServices</code> methods</p>
-<p><code>Initializer</code> method gives you the ability to initiate a custom database for testing all you have to do is to build your custom initializer and called it here. Markop Test will take care of the rest!!</p>
-<p><code>ConfigureTestServices</code> method gives you the ability to register/remove the services. This way you will have full control over the registered services of your app before you start testing!! </p>
-A sample implementation looks like this:
-<img alt="unit-test-app-factory" src="assets/unit-test-app-factory.png"  width="1271" /><br/>
-<p>Then you need to create a class and extend it from your own <code>AppFactory</code> class </p>
-<p>Next, you should define a method inside your class and put your pereferable test attribute. It can be <code>[Fact]</code> or <code>[Theory]</code> or any other valid test attribute in Xunit.</p>
-<p>Now you can start writing your test code inside your method!!</p>
-<p>For example in the below code we wrote code to test an extention method called <code>EmailNormalize</code></p>
-<img alt="email-normalize" src="assets/email-normalize.png"  width="1271" /><br/>
+Or with the .NET CLI:
 
-## Integration Test
+```bash
+dotnet add package MarkopTest
+```
 
-A part of software testing that tests individual code components to validate interactions among different software
-system modules. \
-We use these tests are used to test the app's infrastructure and the whole framework, often including the following
-components:
+## Quick Start
 
-- Database
-- File system
-- Request-response pipeline
+1. Create a test project (class library or xUnit project).
+2. Add a reference to the application project you want to test.
+3. Install `MarkopTest`.
+4. Create an `AppFactory` class that inherits one of the test factories.
+5. Write tests by inheriting from your `AppFactory`.
 
-Markop provides an app factory abstraction to make it easy to implement a **clean** integration test and view output
-instead of using external API testing tools such as Postman.
-<p align="center">
-    <img alt="integration-test" src="assets/integration-test.png" width="1271" />
-</p>
+Example project creation:
 
-### Usage
-<p>First of all you should create an <code>AppFactory</code> class extend it from <code>IntegrationTestFactory</code> class.</p>
+```bash
+dotnet new classlib -n IntegrationTest
+dotnet sln add IntegrationTest
+dotnet add IntegrationTest package MarkopTest
+```
 
-Next you need to override [Initializer](#1--codeinitializeriserviceprovider-hostservicescode), [ConfigureTestServices](#2--codeconfiguretestservicesiservicecollection-servicescode), [GetUrl](#3--codegeturlstring-url-string-controllername-string-testmethodnamecode), [ValidateResponse](#4--codevalidateresponsehttpresponsemessage-httpresponsemessagetfetchoptions-fetchoptionscode) methods.
-<p>Then you need to create a class and extend it from your own <code>AppFactory</code> class. For a cleaner implementation we suggest creating a class for each controller in your API.</p>
-<p>Use <code>Endpoint</code> atrribute to specify a pattern for request addresses.</p>
-<p>Next, you should define a method inside your class and put your pereferable test attribute. It can be <code>[Fact]</code> or <code>[Theory]</code> or any other valid test attribute in Xunit.</p>
-<p>Now you can start writing your test code inside your method!!</p>
-<p>For example in the below code we wrote code to test a <code>SignIn</code> API </p>
-<img alt="integration-test-eg" src="assets/integration-test-eg.png"  width="1271" />
+## Core Concepts
 
-**Attention1**: At runtime variables like <code>controller</code> and <code>action</code> inside <code>Endpoint</code> atrribute will be intitalized with **_name of your class_** and **_name of your method_**.
+### Factory-Based Setup
 
-**Attention2**: Markop Test automatically ignors the ["Test", "Tests", "Controller"] at end of your class name.
+Each test style has a factory base class:
 
-For example in the above code the <code>controller</code> value will be "Account" and the <code>action</code> value will be "SignIn". The requests will be sent to <code>/Account/SignIn</code> endpoint.
+- `UnitTestFactory<TStartup>`
+- `IntegrationTestFactory<TStartup, TFetchOptions>`
+- `FunctionalTestFactory<TStartup>`
+- `LoadTestFactory<TStartup>`
 
-## Functional Test
+You typically override these members:
 
-The test determines the product's functionality that can be done by aggregating integration tests and comparing the
-actual output with the predetermined output. \
-We use case scenarios for functional testing. For example, in a news system, we must test managing news scenarios such
-as **Create**, **Edit** and **Delete** news entity, you can implement transaction workflow in your system. \
-As in the integration testing, Markop provides an app factory abstraction to make it easy to implement a **clean**
-functional test.
+- `Initializer(IServiceProvider hostServices)` to seed data and prepare test state
+- `ConfigureTestServices(IServiceCollection services)` to replace or mock dependencies
+- `GetUrl(string url, string controllerName, string testMethodName)` for integration/load routing
+- `ValidateResponse(HttpResponseMessage response, TFetchOptions options)` for integration assertions
 
-#### Usage
+### Endpoint Routing Attribute
 
-- TODO
+Use `[Endpoint("...")]` on test classes or methods. Markop Test replaces:
 
-## Load Test
+- `[controller]` with test class name (suffixes like `Test`, `Tests`, and `Controller` are removed)
+- `[action]` with the current test method name
 
-### Usage
-- Todo
+## Test Types
 
-## Present Methods
-### 1- <code>Initializer(IServiceProvider hostServices)</code>:
-<code>Initializer</code> method gives you the ability to initiate a custom database for testing. All you have to do is to build your custom initializer and called it here. Markop Test will take care of the rest!!</p>
-### 2- <code>ConfigureTestServices(IServiceCollection services)</code>
-<p><code>ConfigureTestServices</code> method gives you the ability to register/remove the services. This way you will have full control over the registered services of your app before you start testing!! </p>
-A sample implementation looks like this:
-<img alt="unit-test-app-factory" src="assets/unit-test-app-factory.png"  width="1271" /><br/>
+### Unit Tests
 
-### 3- <code>GetUrl(string url, string controllerName, string testMethodName)</code>
-<code>GetUrl</code> helps you to build the correct address to which HttpClient is going to send the request.
+Use `UnitTestFactory` when testing isolated application behavior while still having host and DI access.
 
-### 4- <code>ValidateResponse(HttpResponseMessage httpResponseMessage,TFetchOptions fetchOptions)</code>
-<code>ValidateResponse</code> enables you to customise the response validation proccess according to expected behaviour of your API. 
+### Integration Tests
 
-## Contributions
+Use `IntegrationTestFactory` to send HTTP requests to your in-memory test server and validate full pipeline behavior.
 
-If you're interested in contributing to this project, first of all, We would like to extend my heartfelt gratitude. \
-Please feel free to reach out to us if you need help.
+### Functional Tests
 
-## LICENSE
+Use `FunctionalTestFactory` for end-to-end business scenarios composed of multiple integration-level actions.
 
-MIT
+### Load Tests
+
+Use `LoadTestFactory` to execute synchronous and asynchronous request batches and export performance reports to `LoadTestResult/...`.
+
+## Documentation
+
+- [Getting Started](docs/getting-started.md)
+- [Test Type Guides](docs/test-types.md)
+- [Configuration Reference](docs/configuration.md)
+
+## Sample Project
+
+The `sample/` directory demonstrates real usage:
+
+- `sample/test/UnitTest`
+- `sample/test/IntegrationTest`
+- `sample/test/FunctionalTest`
+- `sample/test/LoadTest`
+
+Run sample tests:
+
+```bash
+dotnet test sample/test/UnitTest/UnitTest.csproj
+dotnet test sample/test/IntegrationTest/IntegrationTest.csproj
+dotnet test sample/test/FunctionalTest/FunctionalTest.csproj
+dotnet test sample/test/LoadTest/LoadTest.csproj
+```
+
+## Contributing
+
+Contributions are welcome. Please open an issue or pull request describing the problem, proposed solution, and test coverage.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
