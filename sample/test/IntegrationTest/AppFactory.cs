@@ -35,10 +35,10 @@ public class AppFactory : IntegrationTestFactory<Startup, FetchOptions>
 
     protected override void ConfigureTestServices(IServiceCollection services)
     {
-        var descriptor = services.SingleOrDefault(d
-            => d.ServiceType == typeof(DbContextOptions<DatabaseContext>));
+        var descriptors = services.Where(d
+            => d.ServiceType.Name.Contains("DbContextOptions"));
 
-        if (descriptor != null)
+        foreach (var descriptor in descriptors.ToList())
             services.Remove(descriptor);
 
         services.AddDbContextPool<DatabaseContext>(options =>
